@@ -1,0 +1,5 @@
+build
+*.xml
+*.properties
+src\main\java\org\kcwiki\monitor\start2\GetStart2.java
+
