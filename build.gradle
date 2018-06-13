@@ -23,7 +23,7 @@ version = '0.0.1-SNAPSHOT'
 bootJar {
     baseName = 'gs-spring-boot'
     classifier = 'springboot'
-//    mainClassName = 'org.kcwiki.x.KanColleScannerApplication'
+//    mainClassName = 'kcwiki.x.kcscanner.KanColleScannerApplication'
 }
 
 //自定义 MANIFEST.MF
@@ -49,15 +49,7 @@ targetCompatibility = 1.8
 
 //添加依赖
 dependencies {
-    // https://mvnrepository.com/artifact/org.jfree/jfreechart
-compile group: 'org.jfree', name: 'jfreechart', version: '1.5.0'
-    // https://mvnrepository.com/artifact/org.freemarker/freemarker
-compile group: 'org.freemarker', name: 'freemarker', version: '2.3.28'
-// https://mvnrepository.com/artifact/com.benbarkay.htmltopdf/htmltopdf
-compile group: 'com.benbarkay.htmltopdf', name: 'htmltopdf', version: '0.1.0'
-// https://mvnrepository.com/artifact/com.openhtmltopdf/openhtmltopdf-core
-compile group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-RC13'
-
+    
     //Apache Utils
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
@@ -69,10 +61,6 @@ compile group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-
     // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     compile group: 'com.google.guava', name: 'guava', version: '24.1-jre'
-    
-    //Log
-    //https://logging.apache.org/log4j/2.x/maven-artifacts.html
-//    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta2'
     
     //HttpClient
     compile group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.0-beta2'
@@ -88,37 +76,33 @@ compile group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
     compile group: 'com.flipkart.zjsonpatch', name: 'zjsonpatch', version: '0.4.3'
     
+    //POJO Patch
+    // https://mvnrepository.com/artifact/org.javers/javers-core
+compile group: 'org.javers', name: 'javers-core', version: '3.9.7'
+
+    
     //JDBC
     compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.2.3'
-    compile group: 'com.zaxxer', name: 'HikariCP', version: '3.1.0'
-//    compile group: 'org.mybatis', name: 'mybatis', version: '3.4.6'
+    compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '1.3.2'
+    compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-autoconfigure', version: '1.3.2'
+//    compile group: 'com.zaxxer', name: 'HikariCP', version: '3.1.0'
     
     //Netty
     compile group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
     
     //Spring Boot
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-aop
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.0.2.RELEASE'
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.0.2.RELEASE'
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure
-compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.2.RELEASE'
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.0.2.RELEASE'
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-jdbc
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.0.2.RELEASE'
-// https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter
-compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '1.3.2'
-// https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-autoconfigure
-//compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-autoconfigure', version: '1.3.2'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.0.2.RELEASE'
 
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-websocket")
-    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
-    
-    
-    compile("org.springframework.boot:spring-boot-starter-actuator")
-    compile("org.springframework.boot:spring-boot-devtools")
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.0.2.RELEASE'
     
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor
 //annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.0.2.RELEASE'
@@ -127,10 +111,6 @@ compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', v
     
     //Just for Test
     testCompile('org.springframework.boot:spring-boot-starter-test')
-    
-    //ProvidedCompile Jars
-//    providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.0'
-//    providedCompile group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
 }
 
 //发布 jar 包

@@ -29,5 +29,6 @@
 ### Custom ###
 /src/main/java/org/kcwiki/x/httpclient/impl/
 *.properties
-/src/main/logs/
-/src/main/resources/
+logs/
+resources/
+test/
