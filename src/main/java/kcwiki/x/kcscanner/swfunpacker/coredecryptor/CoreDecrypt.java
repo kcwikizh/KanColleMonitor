@@ -6,57 +6,52 @@
 package kcwiki.x.kcscanner.swfunpacker.coredecryptor;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import static java.lang.Thread.sleep;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import javax.annotation.PostConstruct;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMPLATE_FOLDER;
-import kcwiki.x.kcscanner.types.PublishStatus;
-import kcwiki.x.kcscanner.types.PublishTypes;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author VEP
  */
+@Component
 public class CoreDecrypt {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CoreDecrypt.class);
     
     @Autowired
+    AppConfigs appConfigs;
+    @Autowired
+    RuntimeValue runtimeValue;
+    @Autowired
     MessagePublisher messagePublisher;
     
-    private final String tppath;
-    private final String ffpath;
+    private String tppath;
+    private String ffpath;
+    private String kcserver;
     private String mapCode;
     private String soundCode;
     private BufferedReader Bfr;
-    private final String kcserver;
-    private boolean isMapNumNull=false;
-    private final Runtime runtime;
+    private boolean isMapNumNull = false;
+    private final Runtime runtime = Runtime.getRuntime();
     public static HashMap<String, String> shipAddressList = new LinkedHashMap<>();
     public static HashMap<String, String> shipDataList = new LinkedHashMap<>();
     public static HashMap<String, String> mapAddressList = new LinkedHashMap<>();
     private static String timeStamp;
     
-    public CoreDecrypt(){
-        this.tppath=TEMPLATE_FOLDER;
-        this.ffpath=AppDataCache.appConfigs.getFile_ffdec();
-        this.kcserver=AppDataCache.appConfigs.getKcserver_host();
-        runtime=Runtime.getRuntime();
+    @PostConstruct
+    public void initMethod() {
+        tppath = runtimeValue.TEMPLATE_FOLDER;
+        ffpath = appConfigs.getFile_ffdec();
+        kcserver = appConfigs.getKcserver_host();
     }
+    
+    
     
     
     public boolean getData(String map,String sound){

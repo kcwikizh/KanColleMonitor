@@ -11,7 +11,8 @@ import java.util.TimeZone;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
-import static kcwiki.x.kcscanner.cache.inmem.AppDataCache.appConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,7 +21,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class HttpClientConfig {
-    public static RequestConfig makeProxyConfig(boolean needProxy) {
+    
+    @Autowired
+    AppConfigs appConfigs;
+    
+    public RequestConfig makeProxyConfig(boolean needProxy) {
         RequestConfig config;
         if (needProxy) {
             HttpHost proxy = new HttpHost(appConfigs.getProxy_host(), appConfigs.getProxy_port());

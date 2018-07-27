@@ -5,12 +5,10 @@
  */
 package kcwiki.x.kcscanner.swfunpacker;
 
-import kcwiki.x.kcscanner.core.files.analyzer.src.VerifyScr;
+import kcwiki.x.kcscanner.core.files.processor.src.VerifyScr;
 import java.io.File;
-import java.io.IOException;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.PUBLISH_FOLDER;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMPLATE_FOLDER;
 import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.types.PublishStatus;
 import kcwiki.x.kcscanner.types.PublishTypes;
@@ -27,17 +25,19 @@ public class Controller {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Controller.class);
     
     @Autowired
+    RuntimeValue runtimeValue;
+    @Autowired
     MessagePublisher messagePublisher;
     
     private String previousfolder;
     private String currentfolder;    
     private final UnpackSwf ffdec = new UnpackSwf();
-    private final kcwiki.x.kcscanner.core.files.analyzer.image.Controller verify = new kcwiki.x.kcscanner.core.files.analyzer.image.Controller();
+    private final kcwiki.x.kcscanner.core.files.processor.image.Controller verify = new kcwiki.x.kcscanner.core.files.processor.image.Controller();
     
 
     public void Analysis(String filename,String filepath,String sourcepath) throws InterruptedException, Exception{
-        previousfolder = TEMPLATE_FOLDER;
-        currentfolder = String.format("%s/%s", PUBLISH_FOLDER, "currentswf");
+        previousfolder = runtimeValue.TEMPLATE_FOLDER;
+        currentfolder = String.format("%s/%s", runtimeValue.PUBLISH_FOLDER, "currentswf");
         if(!new File(currentfolder).exists()){new File(currentfolder).mkdirs();}
         String outputpath=currentfolder+File.separator+sourcepath+File.separator+(filename.substring(0, filename.length()-4));
         if(filename.contains("Core")){

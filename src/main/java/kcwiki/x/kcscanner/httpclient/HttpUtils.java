@@ -32,6 +32,7 @@ import kcwiki.x.kcscanner.types.KcServerStatus;
 import kcwiki.x.kcscanner.types.MsgTypes;
 import org.slf4j.LoggerFactory;
 import kcwiki.x.kcscanner.types.ServiceTypes;
+import org.apache.commons.lang3.exception.ExceptionUtils;
         
 public class HttpUtils {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
@@ -97,7 +98,10 @@ public class HttpUtils {
     }
 
     public static boolean downloadFile(String url, String filefolder, String filename, RequestConfig config) throws ExceptionBase {
-
+        if(!url.startsWith("http://") || !url.startsWith("https://")){
+            url = "http://" + url;
+        }
+        
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
         try{
             httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");  
@@ -110,7 +114,7 @@ public class HttpUtils {
                     if (300 >= response.getCode()) {
                         HttpEntity en = response.getEntity();
                         try (InputStream in = en.getContent()) {
-                            byte[] buf = new byte[1024];
+                            byte[] buf = new byte[512];
                             int len = -1;
 
                             while (-1 != (len = in.read(buf))) {
@@ -129,6 +133,7 @@ public class HttpUtils {
         }catch(ConnectException e){
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
+            ExceptionUtils.getStackTrace(e);
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
         }  
         throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));

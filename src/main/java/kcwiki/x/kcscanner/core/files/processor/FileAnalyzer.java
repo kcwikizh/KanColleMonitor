@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.files.analyzer;
+package kcwiki.x.kcscanner.core.files.processor;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

@@ -17,7 +17,7 @@ import kcwiki.x.kcscanner.initializer.AppConfigs;
  * @author x5171
  */
 public class AppDataCache {
-    public static AppConfigs appConfigs = null;
+    //public static AppConfigs appConfigs = null;
     public static Map<String, SystemScanEntity> systemScanEntitys = null;
     public static boolean isAppInit = false;
     public static boolean isReadyReceive = false;

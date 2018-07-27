@@ -26,8 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author x5171
  */
-public class HttpClientBase {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HttpClientBase.class);
+public class BaseHttpClient {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BaseHttpClient.class);
     
     @Autowired
     protected MessagePublisher messagePublisher;

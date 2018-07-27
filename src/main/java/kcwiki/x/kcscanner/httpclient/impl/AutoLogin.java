@@ -69,7 +69,7 @@ import kcwiki.x.kcscanner.types.ServiceTypes;
  */
 @Component
 @Scope("prototype")
-public class AutoLogin extends HttpClientBase {
+public class AutoLogin extends BaseHttpClient {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AutoLogin.class);
 
     private String user_name;

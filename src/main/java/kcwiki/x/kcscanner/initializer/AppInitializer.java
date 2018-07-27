@@ -10,7 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.BooleanUtils;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.core.CoreInitializer;
 import kcwiki.x.kcscanner.database.TableName;
@@ -34,22 +35,35 @@ public class AppInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
     
     @Autowired
-    UtilsMapper utilsMapper;
-    @Autowired
     AppConfigs appConfigs;
+    @Autowired
+    UtilsMapper utilsMapper;
     @Autowired
     UtilsService utilsService;
     @Autowired
     SystemScanService systemScanService;
     @Autowired
     CoreInitializer coreInitializer;
+    @Autowired
+    HttpClientConfig httpClientConfig;
     
     boolean isInit = false;
+    
+    @PostConstruct
+    public void initMethod() {
+        if(appConfigs == null){
+            LOG.error("找不到程序主配置文件 程序初始化失败。");
+        }
+    }
+    
+    @PreDestroy
+    public void destroyMethod() {
+        
+    }
     
     public void init(){
         
         LOG.info("KanColle SenkaViewer: initialization started");
-        AppDataCache.appConfigs = appConfigs;
         AppDataCache.systemScanEntitys = systemScanService.getAll();
         isInit = true;
         long startTime=System.currentTimeMillis();
@@ -67,7 +81,7 @@ public class AppInitializer {
     
     private void getKcServers() {
         try {
-            String repBody = HttpUtils.getHttpBody(AppDataCache.appConfigs.getKcwiki_api_servers(), HttpClientConfig.makeProxyConfig(false));
+            String repBody = HttpUtils.getHttpBody(appConfigs.getKcwiki_api_servers(), httpClientConfig.makeProxyConfig(false));
             LOG.debug(repBody);
             ObjectMapper objectMapper = new ObjectMapper();
             List<Map<String, Object>> servers = objectMapper.readValue(repBody,

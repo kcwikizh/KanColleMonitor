@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.files.analyzer.image;
+package kcwiki.x.kcscanner.core.files.processor.image;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;

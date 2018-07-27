@@ -21,9 +21,11 @@ import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import static kcwiki.x.kcscanner.tools.ConstantValue.FILESEPARATOR;
 import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +35,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class FileScanner {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FileScanner.class);
+    
+    @Autowired
+    AppConfigs appConfigs;  
+    @Autowired
+    HttpClientConfig httpClientConfig;
     
     public List<FileDataEntity> preScan(String listfile) {
         List<String> lines = new ArrayList<>();
@@ -50,9 +57,9 @@ public class FileScanner {
                 new File(tempFolder).mkdirs();
         String url;
         File _file;
-        String host = AppDataCache.appConfigs.getKcserver_host();
+        String host = appConfigs.getKcserver_host();
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-        RequestConfig requestConfig = HttpClientConfig.makeProxyConfig(false);
+        RequestConfig requestConfig = httpClientConfig.makeProxyConfig(false);
         for(String line:lines) {
             url = String.format("http://%s/%s", host, line);
             _file = new File(url);
@@ -74,9 +81,9 @@ public class FileScanner {
                 new File(tempFolder).mkdirs();
         String url;
         File _file;
-        String host = AppDataCache.appConfigs.getKcserver_host();
+        String host = appConfigs.getKcserver_host();
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-        RequestConfig requestConfig = HttpClientConfig.makeProxyConfig(false);
+        RequestConfig requestConfig = httpClientConfig.makeProxyConfig(false);
         for(FileDataEntity _fileDataEntity:list) {
             url = String.format("http://%s/%s", host, _fileDataEntity.getPath());
             _file = new File(url);

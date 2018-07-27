@@ -3,13 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.start2.analyzer;
+package kcwiki.x.kcscanner.core.start2.processor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import kcwiki.x.kcscanner.core.entity.CombinedFurnitureEntity;
 import kcwiki.x.kcscanner.core.entity.CombinedShipEntity;
 import kcwiki.x.kcscanner.core.entity.JsonPatchEntity;
@@ -72,6 +73,10 @@ public class Start2Analyzer {
     }
     
     private void Start2PreprocessingStage1(Start2 start2, IdMappedStart2Entity mappedStart2Entity){
+        if(start2.getApi_mst_ship() == null) {
+            return;
+        }
+        
         mappedStart2Entity.setApi_mst_ship(
                 start2.getApi_mst_ship().stream().collect(Collectors.toMap(Api_mst_ship::getApi_id, Function.identity()))
         );
@@ -101,6 +106,10 @@ public class Start2Analyzer {
     }
     
     private void Start2PreprocessingStage2(Start2 start2, IdMappedStart2Entity idMappedStart2Entity, CombinedStart2Entity combinedStart2Entity){
+        if(start2.getApi_mst_ship() == null) {
+            return;
+        }
+        
         combinedStart2Entity.setApi_mst_ship(
             new HashMap<String, List<CombinedShipEntity>>(){
                 {
@@ -330,10 +339,48 @@ public class Start2Analyzer {
         });
         primaryStart2Entity.getApi_mst_mapbgm().forEach((k, v) -> {
             if(!secondaryStart2Entity.getApi_mst_mapbgm().containsKey(k)){
-                getStart2PatchEntity().getNewMapbgm().add(v);
+                getStart2PatchEntity().getNewMapbgm().put(v.getApi_id(), v);
             } else {
                 if(!secondaryStart2Entity.getApi_mst_mapbgm().get(k).equals(v)) {
-                    getStart2PatchEntity().getModifiedMapbgm().add(v);
+                    List<Integer> list = new ArrayList<>();
+                    IntStream.rangeClosed(0, 1).forEach(index -> {
+                        if(!secondaryStart2Entity.getApi_mst_mapbgm().get(k)
+                                .getApi_map_bgm().get(index)
+                                .equals(
+                                        v.getApi_map_bgm().get(index)
+                                )
+                            )
+                        {
+                            list.add(v.getApi_map_bgm().get(index));
+                        }else{
+                            list.add(-1);
+                        }
+                    });
+                    IntStream.rangeClosed(0, 1).forEach(index -> {
+                        if(!secondaryStart2Entity.getApi_mst_mapbgm().get(k)
+                                .getApi_boss_bgm().get(index)
+                                .equals(
+                                        v.getApi_boss_bgm().get(index)
+                                )
+                            )
+                        {
+                            list.add(v.getApi_boss_bgm().get(index));
+                        }else{
+                            list.add(-1);
+                        }
+                    });
+                    if(!secondaryStart2Entity.getApi_mst_mapbgm().get(k)
+                            .getApi_moving_bgm()
+                            .equals(
+                                    v.getApi_moving_bgm()
+                            )
+                        )
+                    {
+                        list.add(v.getApi_moving_bgm());
+                    }else{
+                        list.add(-1);
+                    }
+                    getStart2PatchEntity().getModifiedMapbgm().put(v.getApi_id(), list);
                 }
             }
         });

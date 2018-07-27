@@ -3,40 +3,45 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.files.analyzer.src;
+package kcwiki.x.kcscanner.core.files.processor.src;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 
 import kcwiki.x.kcscanner.tools.CommontUtils;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMPLATE_FOLDER;
 import kcwiki.x.kcscanner.types.PublishStatus;
 import kcwiki.x.kcscanner.types.PublishTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author iTeam_VEP
  */
+@Component
 public class VerifyScr {
     static final Logger LOG = LoggerFactory.getLogger(VerifyScr.class);
     
     @Autowired
+    RuntimeValue runtimeValue;
+    @Autowired
     MessagePublisher messagePublisher;
-    private static String rootFolder = TEMPLATE_FOLDER+File.separator+"currentswf";
-    private static HashMap<String,Object> fileData = new LinkedHashMap<>();
-    private static String newFile;
-    private static String oldFile;
+    private String rootFolder;
+    private HashMap<String,Object> fileData = new LinkedHashMap<>();
+    private String newFile;
+    private String oldFile;
     
     public boolean verifyscr(String newFileFolder,String oldFileFolder) {
         new Thread() {  //创建新线程用于下载
             @Override
             public void run() {
+                rootFolder = runtimeValue.TEMPLATE_FOLDER+File.separator+"currentswf";
                 HashMap<String, String> scrDelList = new LinkedHashMap<>();
                 newFile = newFileFolder;
                 oldFile = oldFileFolder;
@@ -72,7 +77,7 @@ public class VerifyScr {
         return true;
     }
     
-    public static HashMap readOldScr(String filepath,HashMap scrDelList)  {
+    public HashMap readOldScr(String filepath,HashMap scrDelList)  {
         File file = new File(filepath);
         if (!file.isDirectory()) {
             scrDelList.put(CommontUtils.getFileHex(file.getAbsolutePath()),file.getAbsolutePath());
@@ -91,7 +96,7 @@ public class VerifyScr {
         return scrDelList;
     }
     
-    public static int readNewScr(String filepath,HashMap<String,String> scrDelList,int count) {
+    public int readNewScr(String filepath,HashMap<String,String> scrDelList,int count) {
         scrdiff srcdiffer = new scrdiff();
         File file = new File(filepath);
         String newFilePath = file.getAbsolutePath();

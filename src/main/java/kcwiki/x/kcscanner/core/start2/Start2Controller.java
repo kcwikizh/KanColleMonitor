@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Date;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
-import kcwiki.x.kcscanner.core.start2.analyzer.Start2Utils;
+import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.database.entity.Start2DataEntity;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.Start2DataService;
@@ -18,6 +18,7 @@ import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.exception.ExceptionBase;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.AutoLogin;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.types.MsgTypes;
@@ -34,6 +35,8 @@ import org.springframework.stereotype.Component;
 public class Start2Controller {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Controller.class);
     
+    @Autowired
+    AppConfigs appConfigs;
     @Autowired
     AutoLogin autoLogin;
     @Autowired
@@ -80,8 +83,8 @@ public class Start2Controller {
     
     public String getStart2Data() {
         autoLogin.setConfig(true);
-        autoLogin.setUser_name(AppDataCache.appConfigs.getKcserver_account_username());
-        autoLogin.setUser_pwd(AppDataCache.appConfigs.getKcserver_account_password());
+        autoLogin.setUser_name(appConfigs.getKcserver_account_username());
+        autoLogin.setUser_pwd(appConfigs.getKcserver_account_password());
         try{
             if(!autoLogin.netStart()) {
                 LOG.warn("获取Start2数据时失败。");

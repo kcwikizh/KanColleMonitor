@@ -8,18 +8,14 @@ package kcwiki.x.kcscanner.core.files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
-import kcwiki.x.kcscanner.core.CoreInitializer;
-import kcwiki.x.kcscanner.core.files.analyzer.FileAnalyzer;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import kcwiki.x.kcscanner.core.files.processor.FileAnalyzer;
 import kcwiki.x.kcscanner.core.files.scanner.FileScanner;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
-import kcwiki.x.kcscanner.database.entity.SystemScanEntity;
 import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.message.mail.EmailService;
-import static kcwiki.x.kcscanner.tools.ConstantValue.FILE_SCANCORE;
-import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_LASTMODIFIED;
 import kcwiki.x.kcscanner.types.MsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +30,8 @@ import org.springframework.stereotype.Component;
 public class FileController {
     private static final Logger LOG = LoggerFactory.getLogger(FileController.class);
     
+    @Autowired
+    RuntimeValue runtimeValue;
     @Autowired
     FileScanner fileScanner;
     @Autowired
@@ -50,7 +48,7 @@ public class FileController {
     private List<FileDataEntity> filePatchData = new ArrayList<>();
     
     public void startScanner() {
-        List<FileDataEntity> fileDataList = fileScanner.preScan(FILE_SCANCORE);
+        List<FileDataEntity> fileDataList = fileScanner.preScan(runtimeValue.FILE_SCANCORE);
         if(fileDataList != null && !fileDataList.isEmpty()) {
             Map<String, FileDataEntity> existDataList = fileDataService.getAll();
             if(!existDataList.isEmpty()){

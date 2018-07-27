@@ -16,8 +16,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.FILE_FFDEC;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import kcwiki.x.kcscanner.types.PublishStatus;
 import kcwiki.x.kcscanner.types.PublishTypes;
@@ -34,6 +35,10 @@ public class UnpackSwf {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UnpackSwf.class);
     
     @Autowired
+    AppConfigs appConfigs;
+    @Autowired
+    RuntimeValue runtimeValue;
+    @Autowired
     MessagePublisher messagePublisher;
     
     private boolean isInit = false;
@@ -48,7 +53,7 @@ public class UnpackSwf {
                     new OutputStreamWriter(
                             new FileOutputStream(
                                     new File(
-                                            String.format("%s/%s", AppDataCache.appConfigs.getFolder_workspace(), "ShellLogs.txt")
+                                            String.format("%s/%s", appConfigs.getFolder_workspace(), "ShellLogs.txt")
                                     ), 
                                     true
                             ), 
@@ -94,13 +99,13 @@ public class UnpackSwf {
                     }
                     count++;
                     
-                    callShell(String.format("java -jar %s -export script,image,sound \"%s/%s\" \"%s\"", FILE_FFDEC, folder, swf.getName(), swf.getAbsolutePath()));
+                    callShell(String.format("java -jar %s -export script,image,sound \"%s/%s\" \"%s\"", runtimeValue.FILE_FFDEC, folder, swf.getName(), swf.getAbsolutePath()));
                 }
             }
         } else {
             count++;
             File swf = new File(file);
-            callShell(String.format("java -jar %s -export script,image,sound \"%s/%s\" \"%s\"", FILE_FFDEC, folder, swf.getName(), swf.getAbsolutePath()));
+            callShell(String.format("java -jar %s -export script,image,sound \"%s/%s\" \"%s\"", runtimeValue.FILE_FFDEC, folder, swf.getName(), swf.getAbsolutePath()));
         }
         
         isInit = true;
@@ -109,12 +114,12 @@ public class UnpackSwf {
     
     //解压各种游戏swf和批量解压文件夹
     public boolean ffdec(String folder,String file){
-        return callShell(String.format("java -jar %s -export script,image,sound \"%s\" \"%s\"", FILE_FFDEC, folder, file));
+        return callShell(String.format("java -jar %s -export script,image,sound \"%s\" \"%s\"", runtimeValue.FILE_FFDEC, folder, file));
     }
     
     //一次性解压所有下载完的地图
     public boolean maps(String folder,String file){
-        return callShell(String.format("java -jar %s -export image,frame \"%s\" \"%s\"", FILE_FFDEC, folder, file));
+        return callShell(String.format("java -jar %s -export image,frame \"%s\" \"%s\"", runtimeValue.FILE_FFDEC, folder, file));
     }
     
     //Start2DataThread
@@ -122,15 +127,15 @@ public class UnpackSwf {
         messagePublisher.publish("开始进行Start2Data解包···", PublishTypes.Admin, PublishStatus.NORMAL);
 //        if(!DBCenter.NewShipDB.isEmpty()){
         if(false) {
-            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf/ships\" \"%s/swf/ships\"", FILE_FFDEC, folder, file));
+            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf/ships\" \"%s/swf/ships\"", runtimeValue.FILE_FFDEC, folder, file));
         }
 //        if(!DBCenter.NewMapinfoDB.isEmpty()){
         if(false) {
-            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf/map\" \"%s/swf/map\"", FILE_FFDEC, folder, file));
+            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf/map\" \"%s/swf/map\"", runtimeValue.FILE_FFDEC, folder, file));
         }
 //        if(!DBCenter.NewMapBgm.isEmpty()){
         if(false) {
-            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf\" \"%s/swf\"", FILE_FFDEC, folder, file));
+            callShell(String.format("java -jar %s -export script,image,sound \"%s/swf\" \"%s/swf\"", runtimeValue.FILE_FFDEC, folder, file));
         }
         return true;
     }

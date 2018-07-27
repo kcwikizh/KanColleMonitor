@@ -6,7 +6,9 @@
 package kcwiki.x.kcscanner.core.entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_bgm;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_const;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_equip_exslot_ship;
@@ -62,8 +64,8 @@ public class Start2PatchEntity {
     private List<Api_mst_mapinfo> newMapinfo = new ArrayList<>();
     private List<Api_mst_mapinfo> modifiedMapinfo = new ArrayList<>();
 
-    private List<Api_mst_mapbgm> newMapbgm = new ArrayList<>();
-    private List<Api_mst_mapbgm> modifiedMapbgm = new ArrayList<>();
+    private Map<Integer, Api_mst_mapbgm> newMapbgm = new HashMap<>();
+    private Map<Integer, List<Integer>> modifiedMapbgm = new HashMap<>();
 
     private List<Api_mst_mission> newMission = new ArrayList<>();
     private List<Api_mst_mission> modifiedMission = new ArrayList<>();
@@ -411,34 +413,6 @@ public class Start2PatchEntity {
     }
 
     /**
-     * @return the newMapbgm
-     */
-    public List<Api_mst_mapbgm> getNewMapbgm() {
-        return newMapbgm;
-    }
-
-    /**
-     * @param newMapbgm the newMapbgm to set
-     */
-    public void setNewMapbgm(List<Api_mst_mapbgm> newMapbgm) {
-        this.newMapbgm = newMapbgm;
-    }
-
-    /**
-     * @return the modifiedMapbgm
-     */
-    public List<Api_mst_mapbgm> getModifiedMapbgm() {
-        return modifiedMapbgm;
-    }
-
-    /**
-     * @param modifiedMapbgm the modifiedMapbgm to set
-     */
-    public void setModifiedMapbgm(List<Api_mst_mapbgm> modifiedMapbgm) {
-        this.modifiedMapbgm = modifiedMapbgm;
-    }
-
-    /**
      * @return the newMission
      */
     public List<Api_mst_mission> getNewMission() {
@@ -522,5 +496,32 @@ public class Start2PatchEntity {
         this.modifiedBgm = modifiedBgm;
     }
 
+    /**
+     * @return the modifiedMapbgm
+     */
+    public Map<Integer, List<Integer>> getModifiedMapbgm() {
+        return modifiedMapbgm;
+    }
+
+    /**
+     * @param modifiedMapbgm the modifiedMapbgm to set
+     */
+    public void setModifiedMapbgm(Map<Integer, List<Integer>> modifiedMapbgm) {
+        this.modifiedMapbgm = modifiedMapbgm;
+    }
+
+    /**
+     * @return the newMapbgm
+     */
+    public Map<Integer, Api_mst_mapbgm> getNewMapbgm() {
+        return newMapbgm;
+    }
+
+    /**
+     * @param newMapbgm the newMapbgm to set
+     */
+    public void setNewMapbgm(Map<Integer, Api_mst_mapbgm> newMapbgm) {
+        this.newMapbgm = newMapbgm;
+    }
     
 }

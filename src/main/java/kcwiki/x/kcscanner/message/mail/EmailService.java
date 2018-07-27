@@ -12,6 +12,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.database.service.LogService;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,9 @@ import kcwiki.x.kcscanner.types.MsgTypes;
 @Component
 public class EmailService {
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
+    
+    @Autowired
+    AppConfigs appConfigs;
     @Autowired
     public JavaMailSender emailSender;
     @Autowired
@@ -41,8 +45,8 @@ public class EmailService {
     //https://blog.csdn.net/csdn_xuexiaoqiang/article/details/73730649
     public void sendSimpleEmail(MsgTypes msgTypes, String text){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
-        message.setFrom(AppDataCache.appConfigs.getMail_sender());//发件人
-        message.setTo(AppDataCache.appConfigs.getMail_recipient());//收件人
+        message.setFrom(appConfigs.getMail_sender());//发件人
+        message.setTo(appConfigs.getMail_recipient());//收件人
         String title = titleGenerator(msgTypes);
         message.setSubject(title);//主题
         message.setText(text);//正文
@@ -61,8 +65,8 @@ public class EmailService {
     
     public void sendSimpleEmail(MsgTypes msgTypes, Throwable ex){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
-        message.setFrom(AppDataCache.appConfigs.getMail_sender());//发件人
-        message.setTo(AppDataCache.appConfigs.getMail_recipient());//收件人
+        message.setFrom(appConfigs.getMail_sender());//发件人
+        message.setTo(appConfigs.getMail_recipient());//收件人
         String title = titleGenerator(msgTypes);
         message.setSubject(title);//主题
         String text = String.format(
@@ -111,7 +115,7 @@ public class EmailService {
         }
     }
     
-    private static String titleGenerator(MsgTypes msgTypes) {
-        return String.format("%s，类型为：%s", AppDataCache.appConfigs.getMail_title(), msgTypes.getName());
+    private String titleGenerator(MsgTypes msgTypes) {
+        return String.format("%s，类型为：%s", appConfigs.getMail_title(), msgTypes.getName());
     }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.files.analyzer.image;
+package kcwiki.x.kcscanner.core.files.processor.image;
 
 import java.io.FileInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -24,9 +24,6 @@ public class GetHash {
         }
     
         public static String getMD5Checksum(String filename) throws Exception {
-            FileInputStream fis= new FileInputStream(filename);    
-            String md5 = DigestUtils.md5Hex(IOUtils.toByteArray(fis));
-            IOUtils.closeQuietly(fis);  
-            return md5;
+            return DigestUtils.md5Hex(new FileInputStream(filename));
         }
 }

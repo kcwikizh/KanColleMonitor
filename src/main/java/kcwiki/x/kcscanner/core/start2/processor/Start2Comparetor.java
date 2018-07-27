@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.core.start2.analyzer;
+package kcwiki.x.kcscanner.core.start2.processor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
