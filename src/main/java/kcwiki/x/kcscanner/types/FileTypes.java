@@ -11,12 +11,14 @@ package kcwiki.x.kcscanner.types;
  */
 public enum FileTypes implements EnumBase {
     Core(0),
-    Ship(1),
-    Slotitem(2),
-    Furniture(3),
-    Useitem(2),
-    Payitem(3),
-    Mapbgm(2)
+    ShipVoice(1),
+    Ship(2),
+    Slotitem(3),
+    Furniture(4),
+    Useitem(5),
+    Payitem(6),
+    Mapbgm(7),
+    Mapinfo(8)
     ;
     
     private int code;

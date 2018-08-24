@@ -7,6 +7,7 @@ package kcwiki.x.kcscanner.initializer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.database.service.UtilsService;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
+import kcwiki.x.kcscanner.tools.ConstantValue;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +66,13 @@ public class AppInitializer {
     public void init(){
         
         LOG.info("KanColle SenkaViewer: initialization started");
-        AppDataCache.systemScanEntitys = systemScanService.getAll();
         isInit = true;
         long startTime=System.currentTimeMillis();
         checkDatabase();
         getKcServers();
+        createFolder();
 //        coreInitializer.coreDataInit();
+        AppDataCache.systemScanEntitys = systemScanService.getAll();
         long endTime=System.currentTimeMillis();
         if (isInit) {
             LOG.info("KanColle SenkaViewer: initialization completed in {} ms{}", endTime-startTime, LINESEPARATOR);
@@ -121,5 +124,43 @@ public class AppInitializer {
         }
     }
     
-    
+    private void createFolder(){
+        File file;
+        String filepath;
+        filepath = ConstantValue.TEMP_FOLDER;
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_workspace());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_publish());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_download());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_privatedata());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_storage());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_template());
+        file = new File(filepath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+    }
 }

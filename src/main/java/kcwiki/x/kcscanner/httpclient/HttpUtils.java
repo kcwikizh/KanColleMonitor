@@ -139,6 +139,52 @@ public class HttpUtils {
         throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
     
+    public static FileDataEntity downloadAndGetData(String url, String filefolder, String filename, RequestConfig config) throws ExceptionBase {
+        if(!url.startsWith("http")) {
+            url = "http://" + url;
+        }
+        
+        HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
+        try{
+            httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");  
+            if(!new File(filefolder).exists())
+                new File(filefolder).mkdirs();
+            final RandomAccessFile file = new RandomAccessFile(filefolder + FILESEPARATOR + filename, "rw");
+            
+            FileDataEntity fileDataEntity = new FileDataEntity();
+            try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+                try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+                    if (300 >= response.getCode()) {
+                        HttpEntity en = response.getEntity();
+                        try (InputStream in = en.getContent()) {
+                            byte[] buf = new byte[512];
+                            int len = -1;
+
+                            while (-1 != (len = in.read(buf))) {
+                                file.write(buf, 0, len);
+                            }
+                            file.close();
+                        }
+                        fileDataEntity.setLastmodified(response.getFirstHeader("Last-Modified").getValue());
+                    }
+                }
+            }
+            
+            return fileDataEntity;
+        }catch(UnknownHostException e){
+            LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
+            throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        }catch(ConnectException e){
+            LOG.error("HttpUtils"+"下载文件连接超时。");
+        }catch(IOException e){
+            ExceptionUtils.getStackTrace(e);
+            LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
+        }  
+        return null;
+//        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+    }
+    
+    
     public static String getHttpBody (String url, RequestConfig config) throws ExceptionBase {
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {

@@ -53,6 +53,8 @@ public class Start2
     private List<Api_mst_shipupgrade> api_mst_shipupgrade;
 
     private List<Api_mst_bgm> api_mst_bgm;
+    
+    private List<Api_mst_equip_ship> api_mst_equip_ship;
 
     private Integer api_register_status;
 

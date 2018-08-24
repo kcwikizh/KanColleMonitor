@@ -26,8 +26,8 @@ import org.springframework.scheduling.annotation.AsyncResult;
  *
  * @author VEP
  */
-public class Controller implements Runnable{
-    static final Logger LOG = LoggerFactory.getLogger(Controller.class);
+public class PhashController implements Runnable{
+    static final Logger LOG = LoggerFactory.getLogger(PhashController.class);
     
     @Autowired
     MessagePublisher messagePublisher;
