@@ -43,7 +43,7 @@ public class BaseUrl {
 //        }
         int s = createKey(type);
         int a = (null == type || 0 == type.length()) ? 1 : type.length();
-        String rs = String.valueOf(17 * (itemID + 7) * resource[(s + itemID * a) % 100] % 8973 + 1e3);
+        String rs = String.valueOf(17 * (itemID + 7) * resource[(s + itemID * a) % 100] % 8973 + 1000);
         return rs;
     }
     

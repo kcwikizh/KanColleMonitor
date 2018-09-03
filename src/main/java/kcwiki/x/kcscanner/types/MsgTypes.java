@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum MsgTypes implements EnumBase {
+public enum MsgTypes implements BaseEnum {
     DEBUG(0),
     INFO(1),
     WARN(2),

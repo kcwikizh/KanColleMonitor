@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public interface EnumBase {
+public interface BaseEnum {
     int getCode();
     String getName();
 }

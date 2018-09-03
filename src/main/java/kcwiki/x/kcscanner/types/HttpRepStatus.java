@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum HttpRepStatus implements EnumBase {
+public enum HttpRepStatus implements BaseEnum {
     UNKNOWNS(0),
     ERROR(-1),
     FAILURE(1),

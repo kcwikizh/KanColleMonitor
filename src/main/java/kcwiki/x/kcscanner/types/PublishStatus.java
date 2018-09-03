@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum PublishStatus implements EnumBase{
+public enum PublishStatus implements BaseEnum{
     SUCCESS(0),
     NORMAL(1),
     ERROR(2)

@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum FileTypes implements EnumBase {
+public enum FileTypes implements BaseEnum {
     Core(0),
     ShipVoice(1),
     Ship(2),

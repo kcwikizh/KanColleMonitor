@@ -10,7 +10,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author iTeam_VEP
  */
-public enum ServiceTypes implements EnumBase{
+public enum ServiceTypes implements BaseEnum{
     KanColleScanner(100),
     KanColleServer(200),
     HttpClient(300)

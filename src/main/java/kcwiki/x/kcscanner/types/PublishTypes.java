@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum PublishTypes implements EnumBase{
+public enum PublishTypes implements BaseEnum{
     Admin(0),
     Guest(1),
     All(2)

@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum KcServerStatus implements EnumBase {
+public enum KcServerStatus implements BaseEnum {
     Unknown(0),
     Maintenance(1),
     WARN(2),

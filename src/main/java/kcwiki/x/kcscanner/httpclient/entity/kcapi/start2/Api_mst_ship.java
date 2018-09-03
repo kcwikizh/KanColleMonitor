@@ -16,61 +16,34 @@ public class Api_mst_ship
 {
     @EqualsExclude
     private int api_id;
-
     private int api_sortno;
-
     private int api_sort_id;
-
     private String api_name;
-
     private String api_yomi;
-
     private int api_stype;
-
     private int api_ctype;
-
     private int api_afterlv;
-
     private String api_aftershipid;
-
-    private List<Integer> api_taik ;
-
-    private List<Integer> api_souk ;
-
-    private List<Integer> api_houg ;
-
-    private List<Integer> api_raig ;
-
-    private List<Integer> api_tyku ;
-
-    private List<Integer> api_luck ;
-
+    private List<Integer> api_taik;
+    private List<Integer> api_souk;
+    private List<Integer> api_houg;
+    private List<Integer> api_raig;
+    private List<Integer> api_tyku;
+    private List<Integer> api_tais;
+    private List<Integer> api_luck;
     private int api_soku;
-
     private int api_leng;
-
     private int api_slot_num;
-
-    private List<Integer> api_maxeq ;
-
+    private List<Integer> api_maxeq;
     private int api_buildtime;
-
-    private List<Integer> api_broken ;
-
-    private List<Integer> api_powup ;
-
+    private List<Integer> api_broken;
+    private List<Integer> api_powup;
     private int api_backs;
-
     private String api_getmes;
-
     private int api_afterfuel;
-
     private int api_afterbull;
-
     private int api_fuel_max;
-
     private int api_bull_max;
-
     private int api_voicef;
     
     @Override
@@ -482,6 +455,20 @@ public class Api_mst_ship
      */
     public void setApi_voicef(int api_voicef) {
         this.api_voicef = api_voicef;
+    }
+
+    /**
+     * @return the api_tais
+     */
+    public List<Integer> getApi_tais() {
+        return api_tais;
+    }
+
+    /**
+     * @param api_tais the api_tais to set
+     */
+    public void setApi_tais(List<Integer> api_tais) {
+        this.api_tais = api_tais;
     }
 
 }

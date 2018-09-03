@@ -17,46 +17,25 @@ import java.util.List;
 public class Start2
 {
     private List<Api_mst_ship> api_mst_ship;
-
-    private List<Api_mst_shipgraph> api_mst_shipgraph;
-
     private List<Api_mst_slotitem_equiptype> api_mst_slotitem_equiptype;
-
     private List<Integer> api_mst_equip_exslot;
-
     private List<Api_mst_equip_exslot_ship> api_mst_equip_exslot_ship;
-
     private List<Api_mst_stype> api_mst_stype;
-
     private List<Api_mst_slotitem> api_mst_slotitem;
-
-    private List<Api_mst_furniture> api_mst_furniture;
-
     private List<Api_mst_furnituregraph> api_mst_furnituregraph;
-
     private List<Api_mst_useitem> api_mst_useitem;
-
     private List<Api_mst_payitem> api_mst_payitem;
-
     private Api_mst_item_shop api_mst_item_shop;
-
     private List<Api_mst_maparea> api_mst_maparea;
-
     private List<Api_mst_mapinfo> api_mst_mapinfo;
-
     private List<Api_mst_mapbgm> api_mst_mapbgm;
-
     private List<Api_mst_mission> api_mst_mission;
-
     private Api_mst_const api_mst_const;
-
     private List<Api_mst_shipupgrade> api_mst_shipupgrade;
-
     private List<Api_mst_bgm> api_mst_bgm;
-    
     private List<Api_mst_equip_ship> api_mst_equip_ship;
-
-    private Integer api_register_status;
+    private List<Api_mst_furniture> api_mst_furniture;
+    private List<Api_mst_shipgraph> api_mst_shipgraph;
 
     public void setApi_mst_ship(List<Api_mst_ship> api_mst_ship){
         this.api_mst_ship = api_mst_ship;
@@ -172,10 +151,18 @@ public class Start2
     public List<Api_mst_bgm> getApi_mst_bgm(){
         return this.api_mst_bgm;
     }
-    public void setApi_register_status(Integer api_register_status){
-        this.api_register_status = api_register_status;
+
+    /**
+     * @return the api_mst_equip_ship
+     */
+    public List<Api_mst_equip_ship> getApi_mst_equip_ship() {
+        return api_mst_equip_ship;
     }
-    public Integer getApi_register_status(){
-        return this.api_register_status;
+
+    /**
+     * @param api_mst_equip_ship the api_mst_equip_ship to set
+     */
+    public void setApi_mst_equip_ship(List<Api_mst_equip_ship> api_mst_equip_ship) {
+        this.api_mst_equip_ship = api_mst_equip_ship;
     }
 }
