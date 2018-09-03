@@ -27,7 +27,7 @@
 /.nb-gradle/
 
 ### Custom ###
-/src/main/java/org/kcwiki/x/httpclient/impl/
+/src/main/java/kcwiki/x/kcscanner/httpclient/impl/
 *.properties
 logs/
 resources/
