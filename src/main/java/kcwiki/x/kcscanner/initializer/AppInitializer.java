@@ -11,9 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.core.CoreInitializer;
 import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.UtilsMapper;
@@ -38,6 +40,8 @@ public class AppInitializer {
     
     @Autowired
     AppConfigs appConfigs;
+    @Autowired 
+    RuntimeValue RUNTIMEValue;
     @Autowired
     UtilsMapper utilsMapper;
     @Autowired
@@ -53,6 +57,7 @@ public class AppInitializer {
     
     @PostConstruct
     public void initMethod() {
+//        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "32");
         if(appConfigs == null){
             LOG.error("找不到程序主配置文件 程序初始化失败。");
         }
@@ -65,19 +70,19 @@ public class AppInitializer {
     
     public void init(){
         
-        LOG.info("KanColle SenkaViewer: initialization started");
+        LOG.info("KanColle Monitor: initialization started");
         isInit = true;
         long startTime=System.currentTimeMillis();
         checkDatabase();
         getKcServers();
         createFolder();
-//        coreInitializer.coreDataInit();
         AppDataCache.systemScanEntitys = systemScanService.getAll();
+//        coreInitializer.coreDataInit();
         long endTime=System.currentTimeMillis();
         if (isInit) {
-            LOG.info("KanColle SenkaViewer: initialization completed in {} ms{}", endTime-startTime, LINESEPARATOR);
+            LOG.info("KanColle Monitor: initialization completed in {} ms{}", endTime-startTime, LINESEPARATOR);
         } else {
-            LOG.error("KanColle SenkaViewer: initialization failed in {} ms{}", endTime-startTime, LINESEPARATOR);
+            LOG.error("KanColle Monitor: initialization failed in {} ms{}", endTime-startTime, LINESEPARATOR);
             System.exit(0);
         }
     }
@@ -132,32 +137,32 @@ public class AppInitializer {
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_workspace());
+        filepath = String.format("%s%s", RUNTIMEValue.WEBROOT_FOLDER, appConfigs.getFolder_workspace());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_publish());
+        filepath = String.format("%s%s", RUNTIMEValue.WEBROOT_FOLDER, appConfigs.getFolder_publish());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_download());
+        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_download());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_privatedata());
+        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_privatedata());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_storage());
+        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_storage());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.WEBROOT, appConfigs.getFolder_template());
+        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_template());
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();

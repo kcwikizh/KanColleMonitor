@@ -25,17 +25,21 @@ public class CombinedFurnitureEntity {
 
     private String api_description;
 
-    private Integer api_rarity;
+    private int api_rarity;
 
-    private Integer api_price;
+    private int api_price;
 
-    private Integer api_saleflg;
+    private int api_saleflg;
 
-    private Integer api_season;
+    private int api_season;
+
+    private int api_version;
+
+    private int api_outside_id;
+
+    private int api_active_flag;
 
     private String api_filename;
-
-    private String api_version;
     
     @Override
     public boolean equals(Object obj) {
@@ -48,15 +52,15 @@ public class CombinedFurnitureEntity {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 89 * hash + Objects.hashCode(this.api_type);
-        hash = 89 * hash + Objects.hashCode(this.api_title);
-        hash = 89 * hash + Objects.hashCode(this.api_description);
-        hash = 89 * hash + Objects.hashCode(this.api_rarity);
-        hash = 89 * hash + Objects.hashCode(this.api_price);
-        hash = 89 * hash + Objects.hashCode(this.api_saleflg);
-        hash = 89 * hash + Objects.hashCode(this.api_season);
-        hash = 89 * hash + Objects.hashCode(this.api_filename);
-        hash = 89 * hash + Objects.hashCode(this.api_version);
+        hash = 89 * hash + Objects.hashCode(this.getApi_type());
+        hash = 89 * hash + Objects.hashCode(this.getApi_title());
+        hash = 89 * hash + Objects.hashCode(this.getApi_description());
+        hash = 89 * hash + Objects.hashCode(this.getApi_rarity());
+        hash = 89 * hash + Objects.hashCode(this.getApi_price());
+        hash = 89 * hash + Objects.hashCode(this.getApi_saleflg());
+        hash = 89 * hash + Objects.hashCode(this.getApi_season());
+        hash = 89 * hash + Objects.hashCode(this.getApi_filename());
+        hash = 89 * hash + Objects.hashCode(this.getApi_version());
         return hash;
     }
 
@@ -133,57 +137,99 @@ public class CombinedFurnitureEntity {
     /**
      * @return the api_rarity
      */
-    public Integer getApi_rarity() {
+    public int getApi_rarity() {
         return api_rarity;
     }
 
     /**
      * @param api_rarity the api_rarity to set
      */
-    public void setApi_rarity(Integer api_rarity) {
+    public void setApi_rarity(int api_rarity) {
         this.api_rarity = api_rarity;
     }
 
     /**
      * @return the api_price
      */
-    public Integer getApi_price() {
+    public int getApi_price() {
         return api_price;
     }
 
     /**
      * @param api_price the api_price to set
      */
-    public void setApi_price(Integer api_price) {
+    public void setApi_price(int api_price) {
         this.api_price = api_price;
     }
 
     /**
      * @return the api_saleflg
      */
-    public Integer getApi_saleflg() {
+    public int getApi_saleflg() {
         return api_saleflg;
     }
 
     /**
      * @param api_saleflg the api_saleflg to set
      */
-    public void setApi_saleflg(Integer api_saleflg) {
+    public void setApi_saleflg(int api_saleflg) {
         this.api_saleflg = api_saleflg;
     }
 
     /**
      * @return the api_season
      */
-    public Integer getApi_season() {
+    public int getApi_season() {
         return api_season;
     }
 
     /**
      * @param api_season the api_season to set
      */
-    public void setApi_season(Integer api_season) {
+    public void setApi_season(int api_season) {
         this.api_season = api_season;
+    }
+
+    /**
+     * @return the api_version
+     */
+    public int getApi_version() {
+        return api_version;
+    }
+
+    /**
+     * @param api_version the api_version to set
+     */
+    public void setApi_version(int api_version) {
+        this.api_version = api_version;
+    }
+
+    /**
+     * @return the api_outside_id
+     */
+    public int getApi_outside_id() {
+        return api_outside_id;
+    }
+
+    /**
+     * @param api_outside_id the api_outside_id to set
+     */
+    public void setApi_outside_id(int api_outside_id) {
+        this.api_outside_id = api_outside_id;
+    }
+
+    /**
+     * @return the api_active_flag
+     */
+    public int getApi_active_flag() {
+        return api_active_flag;
+    }
+
+    /**
+     * @param api_active_flag the api_active_flag to set
+     */
+    public void setApi_active_flag(int api_active_flag) {
+        this.api_active_flag = api_active_flag;
     }
 
     /**
@@ -199,19 +245,4 @@ public class CombinedFurnitureEntity {
     public void setApi_filename(String api_filename) {
         this.api_filename = api_filename;
     }
-
-    /**
-     * @return the api_version
-     */
-    public String getApi_version() {
-        return api_version;
-    }
-
-    /**
-     * @param api_version the api_version to set
-     */
-    public void setApi_version(String api_version) {
-        this.api_version = api_version;
-    }
-    
 }

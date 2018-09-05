@@ -66,6 +66,7 @@ public class Start2PatchEntity {
 
     private Map<Integer, Api_mst_mapbgm> newMapbgm = new HashMap<>();
     private Map<Integer, List<Integer>> modifiedMapbgm = new HashMap<>();
+    private Map<Integer, Api_mst_mapbgm> allMapbgm = new HashMap<>();
 
     private List<Api_mst_mission> newMission = new ArrayList<>();
     private List<Api_mst_mission> modifiedMission = new ArrayList<>();
@@ -522,6 +523,20 @@ public class Start2PatchEntity {
      */
     public void setNewMapbgm(Map<Integer, Api_mst_mapbgm> newMapbgm) {
         this.newMapbgm = newMapbgm;
+    }
+
+    /**
+     * @return the allMapbgm
+     */
+    public Map<Integer, Api_mst_mapbgm> getAllMapbgm() {
+        return allMapbgm;
+    }
+
+    /**
+     * @param allMapbgm the allMapbgm to set
+     */
+    public void setAllMapbgm(Map<Integer, Api_mst_mapbgm> allMapbgm) {
+        this.allMapbgm = allMapbgm;
     }
     
 }

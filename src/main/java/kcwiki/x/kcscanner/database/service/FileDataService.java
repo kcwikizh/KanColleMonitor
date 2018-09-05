@@ -10,6 +10,7 @@ import java.util.Map;
 import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.FileDataMapper;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,11 @@ public class FileDataService {
         if(!utilsService.existTable(TableName.getDataLastmodifiedTable())){
             return -1;
         }
-        fileDataMapper.insertBatch(TableName.getLastModifiedLogTable(), list);
+        try{
+            fileDataMapper.insertBatch(TableName.getLastModifiedLogTable(), list);
+        } catch (Exception ex) {
+            LOG.error(ExceptionUtils.getStackTrace(ex));
+        }
         return fileDataMapper.insertBatch(TableName.getDataLastmodifiedTable(), list);
     }
     

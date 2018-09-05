@@ -18,7 +18,7 @@ public final class ConstantValue {
     public final static String LINESEPARATOR = System.getProperty("line.separator", "\n");
     public final static String FILESEPARATOR = File.separator;
     public static final String CLASSPATH;
-    public static final String WEBROOT;
+    public static final String APPROOT;
     public final static String TEMP_FOLDER = 
             String.format("%s%s", System.getProperty("java.io.tmpdir"), "kcscanner");
     
@@ -35,7 +35,7 @@ public final class ConstantValue {
         } else {
             CLASSPATH = _CLASSPATH;
         }
-        WEBROOT = CLASSPATH.replace("/WEB-INF/classes", "");
+        APPROOT = CLASSPATH.replace("/WEB-INF/classes", "");
     }
     
 }

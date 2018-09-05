@@ -8,6 +8,7 @@ package kcwiki.x.kcscanner.core.start2.processor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -337,9 +338,13 @@ public class Start2Analyzer {
                 }
             }
         });
+        
+        Map<Integer, Api_mst_mapbgm> _mapbgm = new HashMap<>();
         primaryStart2Entity.getApi_mst_mapbgm().forEach((k, v) -> {
+            _mapbgm.put(v.getApi_id(), v);
             if(!secondaryStart2Entity.getApi_mst_mapbgm().containsKey(k)){
                 getStart2PatchEntity().getNewMapbgm().put(v.getApi_id(), v);
+                
             } else {
                 if(!secondaryStart2Entity.getApi_mst_mapbgm().get(k).equals(v)) {
                     List<Integer> list = new ArrayList<>();
@@ -384,6 +389,9 @@ public class Start2Analyzer {
                 }
             }
         });
+        getStart2PatchEntity().getAllMapbgm().putAll(_mapbgm);
+        _mapbgm.clear();
+        
         primaryStart2Entity.getApi_mst_bgm().forEach((k, v) -> {
             if(!secondaryStart2Entity.getApi_mst_bgm().containsKey(k)){
                 getStart2PatchEntity().getNewBgm().addAll(v);

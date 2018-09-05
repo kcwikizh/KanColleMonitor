@@ -32,6 +32,7 @@ import kcwiki.x.kcscanner.types.KcServerStatus;
 import kcwiki.x.kcscanner.types.MsgTypes;
 import org.slf4j.LoggerFactory;
 import kcwiki.x.kcscanner.types.ServiceTypes;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
         
 public class HttpUtils {
@@ -149,12 +150,12 @@ public class HttpUtils {
             httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");  
             if(!new File(filefolder).exists())
                 new File(filefolder).mkdirs();
-            final RandomAccessFile file = new RandomAccessFile(filefolder + FILESEPARATOR + filename, "rw");
-            
+            RandomAccessFile file = null;
             FileDataEntity fileDataEntity = new FileDataEntity();
             try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
                 try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                     if (300 >= response.getCode()) {
+                        file = new RandomAccessFile(filefolder + FILESEPARATOR + filename, "rw");
                         HttpEntity en = response.getEntity();
                         try (InputStream in = en.getContent()) {
                             byte[] buf = new byte[512];
@@ -163,13 +164,25 @@ public class HttpUtils {
                             while (-1 != (len = in.read(buf))) {
                                 file.write(buf, 0, len);
                             }
-                            file.close();
                         }
                         fileDataEntity.setLastmodified(response.getFirstHeader("Last-Modified").getValue());
                     }
                 }
+            } finally {
+                if (file != null)
+                    file.close();
             }
-            
+            if(StringUtils.isBlank(fileDataEntity.getLastmodified())){
+                File _file = new File(filefolder + FILESEPARATOR + filename);
+                if(_file.exists())
+                    _file.delete();
+                if(url.contains("useitem/card_") || url.contains("useitem/card") || 
+                        url.contains("airunit_banner") || url.contains("airunit_fairy") || url.contains("airunit_name") || url.contains("btxt_flat") ||
+                        url.contains("kcs/sound"))
+                    return null;
+                LOG.error("{}下载失败。", url);
+                return null;
+            }
             return fileDataEntity;
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");

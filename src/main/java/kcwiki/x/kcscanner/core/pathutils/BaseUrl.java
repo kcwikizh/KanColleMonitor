@@ -47,7 +47,7 @@ public class BaseUrl {
         return rs;
     }
     
-    public static String getItemUrl(String itemType, int itemID, String picType, int picVersion){
+    public static String getItemUrl4(String itemType, int itemID, String picType){
         switch (itemType.toLowerCase()) {
             case "ships": {
                 itemType = "ship";
@@ -66,7 +66,31 @@ public class BaseUrl {
                 itemType = itemType.toLowerCase();
         }    
         String obfsStr = SuffixUtil_create(itemID, String.format("%s_%s", itemType, picType));
-        return String.format("%s/kcs2/resources/%s/%s/"+ "%s_%s.png?version=%s", "", itemType, picType, String.format("%04d", itemID), obfsStr, picVersion);
+        return String.format("%s_%s", String.format("%04d", itemID), obfsStr);
+//        return String.format("%s/kcs2/resources/%s/%s/"+ "%s_%s.png?version=%s", "", itemType, picType, String.format("%04d", itemID), obfsStr, picVersion);
+    }
+    
+    public static String getItemUrl(String itemType, int itemID, String picType){
+        switch (itemType.toLowerCase()) {
+            case "ships": {
+                itemType = "ship";
+                break;
+            }
+            case "item":
+                break;
+            case "items":
+                break;
+            case "equipment":
+                break;
+            case "equipments": 
+                itemType = "slot";
+                break;
+            default: 
+                itemType = itemType.toLowerCase();
+        }    
+        String obfsStr = SuffixUtil_create(itemID, String.format("%s_%s", itemType, picType));
+        return String.format("%s_%s", String.format("%03d", itemID), obfsStr);
+//        return String.format("%s/kcs2/resources/%s/%s/"+ "%s_%s.png?version=%s", "", itemType, picType, String.format("%03d", itemID), obfsStr, picVersion);
     }
 
 

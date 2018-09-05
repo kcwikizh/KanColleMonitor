@@ -8,7 +8,6 @@ package kcwiki.x.kcscanner.cache.inmem;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import static kcwiki.x.kcscanner.tools.ConstantValue.CLASSPATH;
-import static kcwiki.x.kcscanner.tools.ConstantValue.WEBROOT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,10 +27,12 @@ public class RuntimeValue {
     public String PUBLISH_FOLDER;
     public String WORKSPACE_FOLDER;
     public String FILE_SCANCORE;
-    public String FILE_FFDEC;
+    public String WEBROOT_FOLDER;
     
     @PostConstruct
     public void initMethod() {
+        WEBROOT_FOLDER = appConfigs.getFolder_webroot();
+        
         PRIVATEDATA_FOLDER =
             String.format("%s%s", CLASSPATH, appConfigs.getFolder_privatedata());
         DOWNLOAD_FOLDER =
@@ -40,14 +41,12 @@ public class RuntimeValue {
             String.format("%s%s", CLASSPATH, appConfigs.getFolder_template());
     
         PUBLISH_FOLDER =
-            String.format("%s%s", WEBROOT, appConfigs.getFolder_template());
+            String.format("%s%s", WEBROOT_FOLDER, appConfigs.getFolder_publish());
         WORKSPACE_FOLDER =
-            String.format("%s%s", WEBROOT, appConfigs.getFolder_template());
+            String.format("%s%s", WEBROOT_FOLDER, appConfigs.getFolder_workspace());
     
         FILE_SCANCORE =
             String.format("%s%s", CLASSPATH, appConfigs.getFile_filelist());
-        FILE_FFDEC =
-            String.format("%s%s", CLASSPATH, appConfigs.getFile_ffdec());
     }
     
 }

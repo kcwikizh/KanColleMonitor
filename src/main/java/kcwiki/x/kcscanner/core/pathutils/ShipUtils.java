@@ -5,34 +5,64 @@
  */
 package kcwiki.x.kcscanner.core.pathutils;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 /**
  *
  * @author x5171
  */
 public class ShipUtils extends BaseUrl {
-    
-    //舰娘可用图片类型 敌舰没有dmg类型
-    String[] ShipPicType = {
-        "full",
-        "full_dmg",
-        "supply_character",
-        "supply_character_dmg",
-        "remodel",
-        "remodel_dmg",
-        "banner",
-        "banner_dmg",
-        "card",
-        "card_dmg",
-    };
 
     public static boolean ShipUtil_isEnemy(int t) {
         return t > 1500;
     }
 
-    public static String getPath(int shipID, String picType, int picVersion) {
-        if(ShipUtil_isEnemy(shipID) && picType.contains("_dmg"))
+    public static String getPath(int shipID, String picType) {
+        if(ShipUtil_isEnemy(shipID) && 
+            (
+                picType.contains("_dmg") ||
+                picType.contains("icon_box") ||
+                picType.contains("album_status") ||
+                picType.contains("card") ||
+                picType.contains("character") ||
+                picType.contains("remodel") ||
+                picType.contains("supply_character")
+            )
+        )
             return null;
-        return getItemUrl("ship", shipID, picType, picVersion);
+        return getItemUrl4("ship", shipID, picType);
+    }
+    
+    public static String getWikiFileName(String wikiID, String picType) {
+        String wikiType;
+        switch(picType){
+            case "card":
+                wikiType = "KanMusu%sHD";
+                break;
+            case "banner":
+                wikiType = "KanMusu%sHDBanner";
+                break;
+            case "card_dmg":
+                wikiType = "KanMusu%sHDDmg";
+                break;
+            case "banner_dmg":
+                wikiType = "KanMusu%sHDDmgBanner";
+                break;
+            case "full":
+                wikiType = "KanMusu%sHDIllust";
+                break;
+            case "full_dmg":
+                wikiType = "KanMusu%sHDDmgIllust";
+                break;
+            default:
+                return null;
+        }
+        try{
+            return String.format(wikiType, wikiID);
+        } catch (Exception ex) {
+            ExceptionUtils.getStackTrace(ex);
+        }
+        return null;
     }
     
     public static String getShipVoice(int shipID, String filename, int voiceType){

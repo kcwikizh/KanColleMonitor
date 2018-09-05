@@ -26,6 +26,8 @@ public class AppConfigs {
     private int proxy_port;
     @Value("${global.debug}")
     private boolean debug;
+    @Value("${global.folder.webroot}")
+    private String folder_webroot;
     @Value("${global.folder.privatedata}")
     private String folder_privatedata;
     @Value("${global.folder.download}")
@@ -482,6 +484,20 @@ public class AppConfigs {
      */
     public void setKcserver_host(String kcserver_host) {
         this.kcserver_host = kcserver_host;
+    }
+
+    /**
+     * @return the folder_webroot
+     */
+    public String getFolder_webroot() {
+        return folder_webroot;
+    }
+
+    /**
+     * @param folder_webroot the folder_webroot to set
+     */
+    public void setFolder_webroot(String folder_webroot) {
+        this.folder_webroot = folder_webroot;
     }
 
 }

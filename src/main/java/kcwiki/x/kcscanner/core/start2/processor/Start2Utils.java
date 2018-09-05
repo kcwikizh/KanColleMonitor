@@ -24,12 +24,18 @@ import org.springframework.stereotype.Component;
 public class Start2Utils {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Start2Utils.class);
     
+    /**
+     * 
+     * @param scrStr    旧Start2文件
+     * @param tarStr    最新的Start2文件
+     * @return  Patch数据
+     */
     public JsonNode getPatch(String scrStr, String tarStr) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode source = mapper.valueToTree(start2pojo(scrStr));
         JsonNode target = mapper.valueToTree(start2pojo(tarStr));
         JsonNode patch = JsonDiff.asJson(source, target);
-        if(patch.size() != 0){
+        if(patch.size() > 0){
             return patch;
         }
         return null;
@@ -78,6 +84,7 @@ public class Start2Utils {
     public Start2 jsonnode2start2(JsonNode start2Node) {
         ObjectMapper objectMapper = new ObjectMapper();
         Start2 start2 = null;
+//        JsonPatchEntity
         try {
             start2 = objectMapper.treeToValue(start2Node, Start2.class);
         } catch (IOException ex) {

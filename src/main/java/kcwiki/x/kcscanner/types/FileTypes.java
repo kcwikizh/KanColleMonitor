@@ -18,7 +18,8 @@ public enum FileTypes implements BaseEnum {
     Useitem(5),
     Payitem(6),
     Mapbgm(7),
-    Mapinfo(8)
+    Mapinfo(8),
+    Bgm(9)
     ;
     
     private int code;

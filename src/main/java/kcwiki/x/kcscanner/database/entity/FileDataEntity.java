@@ -16,6 +16,7 @@ public class FileDataEntity {
     private Integer id;
     private String filename;
     private String path;
+    private Integer itemid = -1;
     private FileTypes type;
     private String lastmodified;
     private String hash; 
@@ -117,6 +118,20 @@ public class FileDataEntity {
      */
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    /**
+     * @return the itemid
+     */
+    public Integer getItemid() {
+        return itemid;
+    }
+
+    /**
+     * @param itemid the itemid to set
+     */
+    public void setItemid(Integer itemid) {
+        this.itemid = itemid;
     }
 
 }

@@ -5,7 +5,6 @@
  */
 package kcwiki.x.kcscanner.core.start2.processor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import kcwiki.x.kcscanner.core.entity.CombinedFurnitureEntity;
 import kcwiki.x.kcscanner.core.entity.CombinedShipEntity;

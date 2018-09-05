@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import kcwiki.x.kcscanner.core.start2.processor.DiffLogger;
 import org.apache.commons.lang3.builder.EqualsExclude;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_shipupgrade;
 
@@ -25,6 +26,8 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_shipupgrade;
 public class CombinedShipEntity {
     @EqualsExclude
     private Integer api_id;
+    @EqualsExclude
+    private String wiki_id;
     
     private Integer api_sortno;
 
@@ -123,16 +126,37 @@ public class CombinedShipEntity {
         if(obj == null || !(obj instanceof CombinedShipEntity)){
             return false;
         }
+        CombinedShipEntity that = (CombinedShipEntity) obj;
+        removeVersion(this);
+        removeVersion(that);
         ObjectMapper mapper = new ObjectMapper(); 
         JsonNode target = convertToNode(this, mapper);
-        JsonNode source = convertToNode(obj, mapper);
+        JsonNode source = convertToNode(that, mapper);
         JsonNode patch = JsonDiff.asJson(source, target);
-        return patch.size() == 0;
+        //api_version		：ファイルのバージョン 文字列 [グラフィック, ボイス, 母港ボイス]    文件版本 array[graphic,voice,main_voice]
+//        if(!this.getApi_version().get(0).equals(that.getApi_version().get(0))) 
+//            return false;
+        if(patch.size() > 0) {
+            DiffLogger.addSlotitemDiff(this.getApi_name(), patch);
+            return false;
+        }
+        return true;
+    }
+    
+    private void removeVersion(CombinedShipEntity combinedShipEntity){
+        if(combinedShipEntity.getApi_version().size() == 3){
+            combinedShipEntity.getApi_version().remove(1);
+            combinedShipEntity.getApi_version().remove(1);
+        } else {
+            System.err.print("WTF?!");
+        }
     }
     
     private JsonNode convertToNode(Object obj, ObjectMapper mapper){
         Map<String, Object> map = mapper.convertValue(obj, Map.class);
         map.remove("api_id");
+        map.remove("wiki_id");
+//        map.remove("api_version");
         ((List<Map<String, Object>> ) map.get("api_mst_shipupgrade"))
                 .forEach(o -> {
                     o.remove("api_id");
@@ -848,6 +872,20 @@ public class CombinedShipEntity {
      */
     public void setApi_mst_shipupgrade(List<Api_mst_shipupgrade> api_mst_shipupgrade) {
         this.api_mst_shipupgrade = api_mst_shipupgrade;
+    }
+
+    /**
+     * @return the wiki_id
+     */
+    public String getWiki_id() {
+        return wiki_id;
+    }
+
+    /**
+     * @param wiki_id the wiki_id to set
+     */
+    public void setWiki_id(String wiki_id) {
+        this.wiki_id = wiki_id;
     }
 
 }

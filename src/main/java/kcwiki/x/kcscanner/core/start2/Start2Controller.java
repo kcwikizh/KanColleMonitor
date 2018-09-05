@@ -46,7 +46,7 @@ public class Start2Controller {
     @Autowired
     Start2Controller start2Controller;
     @Autowired
-    Start2Utils start2Analyzer;
+    Start2Utils start2Utils;
     @Autowired
     LogService logService;
     @Autowired
@@ -54,24 +54,27 @@ public class Start2Controller {
     
     private Start2 start2PatchData = null;
     
-    public void startScanner() {
+    public boolean getLatestStart2Data() {
         Date date = new Date();
-        String start2 = getStart2Data();
-        if(start2 != null) {
+        String start2raw = getStart2Data();
+        if(start2raw != null) {
             Start2DataEntity latestData = start2DataService.getLatestData();
             if(latestData != null) {
-                JsonNode patch = start2Analyzer.getPatch(latestData.getData(), start2);
+                JsonNode patch = start2Utils.getPatch(latestData.getData(), start2raw);
                 if(patch != null) {
-                    start2PatchData = start2Analyzer.jsonnode2start2(patch);
-                    insertStart2Data(start2, date);
+                    start2PatchData = start2Utils.jsonnode2start2(patch);
+                    insertStart2Data(start2raw, date);
+                    return true;
                 }
             } else {
-                start2PatchData = start2Analyzer.start2pojo(start2);
-                insertStart2Data(start2, date);
+                start2PatchData = start2Utils.start2pojo(start2raw);
+                insertStart2Data(start2raw, date);
+                return true;
             }
         } else {
             emailService.sendSimpleEmail(MsgTypes.ERROR, "扫描Start2数据时失败。");
         }
+        return false;
     }
     
     private void insertStart2Data(String start2, Date date) {

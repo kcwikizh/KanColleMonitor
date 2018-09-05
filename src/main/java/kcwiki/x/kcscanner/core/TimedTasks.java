@@ -5,10 +5,13 @@
  */
 package kcwiki.x.kcscanner.core;
 
+import org.springframework.stereotype.Component;
+
 /**
  *
  * @author x5171
  */
+@Component
 public class TimedTasks {
     
 }

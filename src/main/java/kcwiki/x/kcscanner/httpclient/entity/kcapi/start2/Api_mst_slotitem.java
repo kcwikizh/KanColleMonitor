@@ -9,8 +9,13 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi.start2;
  *
  * @author x5171
  */
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flipkart.zjsonpatch.JsonDiff;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import kcwiki.x.kcscanner.core.start2.processor.DiffLogger;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.EqualsExclude;
 public class Api_mst_slotitem
@@ -74,12 +79,36 @@ public class Api_mst_slotitem
 
     private int api_version;
     
+//    @Override
+//    public boolean equals(Object obj) {
+//        if(obj == null || !(obj instanceof Api_mst_slotitem)){
+//            return false;
+//        }
+//        return EqualsBuilder.reflectionEquals(this, obj);
+//    }
+    
     @Override
     public boolean equals(Object obj) {
         if(obj == null || !(obj instanceof Api_mst_slotitem)){
             return false;
         }
-        return EqualsBuilder.reflectionEquals(this, obj);
+        Api_mst_slotitem that = (Api_mst_slotitem) obj;
+        ObjectMapper mapper = new ObjectMapper(); 
+        JsonNode target = convertToNode(this, mapper);
+        JsonNode source = convertToNode(that, mapper);
+        JsonNode patch = JsonDiff.asJson(source, target);
+        if(patch.size() > 0) {
+            DiffLogger.addSlotitemDiff(this.getApi_name(), patch);
+            return false;
+        }
+        return true;
+    }
+    
+    private JsonNode convertToNode(Object obj, ObjectMapper mapper){
+        Map<String, Object> map = mapper.convertValue(obj, Map.class);
+        map.remove("api_id");
+        JsonNode node = mapper.valueToTree(map);
+        return node;
     }
 
     @Override
