@@ -69,7 +69,6 @@ public class AppInitializer {
     }
     
     public void init(){
-        
         LOG.info("KanColle Monitor: initialization started");
         isInit = true;
         long startTime=System.currentTimeMillis();
@@ -77,8 +76,12 @@ public class AppInitializer {
         getKcServers();
         createFolder();
         AppDataCache.systemScanEntitys = systemScanService.getAll();
-//        coreInitializer.coreDataInit();
+        coreInitializer.coreDataInit();
         long endTime=System.currentTimeMillis();
+        LOG.info("Temp folder: {}", ConstantValue.TEMP_FOLDER);
+        LOG.info("AppRoot folder: {}", ConstantValue.APPROOT);
+        LOG.info("WebRoot folder: {}", RUNTIMEValue.WEBROOT_FOLDER);
+        LOG.info("CoreListFilePath folder: {}", RUNTIMEValue.FILE_SCANCORE);
         if (isInit) {
             LOG.info("KanColle Monitor: initialization completed in {} ms{}", endTime-startTime, LINESEPARATOR);
         } else {

@@ -58,16 +58,16 @@ public class CoreInitializer {
         SystemScanEntity systemScanEntity = AppDataCache.systemScanEntitys.get(SCANNAME_START2);
         if(systemScanEntity == null || systemScanEntity.getInit() != 1) {
             start2Controller.getLatestStart2Data();
-            AppDataCache.start2data = start2Utils.start2pojo(start2Controller.getStart2Data());
-//            start2Analyzer.getDiffStart2(null, new Start2(),  AppDataCache.start2data);
-//            start2Downloader.download(start2Analyzer.getStart2PatchEntity(), false);
+            AppDataCache.start2data = start2Controller.getStart2Data();
+            start2Analyzer.getDiffStart2(null, new Start2(),  AppDataCache.start2data);
+            start2Downloader.download(start2Analyzer.getStart2PatchEntity(), false);
             
             systemScanEntity = new SystemScanEntity();
             systemScanEntity.setInit(1);
             systemScanEntity.setName(SCANNAME_START2);
             systemScanEntity.setLastmodified(date);
             systemScanEntity.setTimeline(addTimeLine(null, date.getTime()));
-            systemScanService.updateOne(systemScanEntity);
+            systemScanService.insertOne(systemScanEntity);
             AppDataCache.systemScanEntitys.put(SCANNAME_START2, systemScanEntity);
         }
         systemScanEntity = AppDataCache.systemScanEntitys.get(SCANNAME_LASTMODIFIED);
@@ -78,7 +78,7 @@ public class CoreInitializer {
             systemScanEntity.setName(SCANNAME_LASTMODIFIED);
             systemScanEntity.setLastmodified(date);
             systemScanEntity.setTimeline(addTimeLine(null, date.getTime()));
-            systemScanService.updateOne(systemScanEntity);
+            systemScanService.insertOne(systemScanEntity);
             AppDataCache.systemScanEntitys.put(SCANNAME_LASTMODIFIED, systemScanEntity);
         }
         controlCenter.startDownload();

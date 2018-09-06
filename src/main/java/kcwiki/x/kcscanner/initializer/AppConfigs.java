@@ -42,8 +42,6 @@ public class AppConfigs {
     private String folder_workspace;
     @Value("${global.file.filelist}")
     private String file_filelist;
-    @Value("${global.file.ffdec}")
-    private String file_ffdec;
     @Value("${application.superuser.username}")
     private String application_superuser_username;
     @Value("${application.superuser.password}")
@@ -400,20 +398,6 @@ public class AppConfigs {
      */
     public void setFile_filelist(String file_filelist) {
         this.file_filelist = file_filelist;
-    }
-
-    /**
-     * @return the file_ffdec
-     */
-    public String getFile_ffdec() {
-        return file_ffdec;
-    }
-
-    /**
-     * @param file_ffdec the file_ffdec to set
-     */
-    public void setFile_ffdec(String file_ffdec) {
-        this.file_ffdec = file_ffdec;
     }
 
     /**

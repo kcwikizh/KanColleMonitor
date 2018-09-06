@@ -8,7 +8,6 @@ package kcwiki.x.kcscanner.core.downloader;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -45,6 +44,8 @@ import kcwiki.x.kcscanner.tools.CommontUtils;
 import kcwiki.x.kcscanner.types.FileTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ public class Start2Downloader {
     @PostConstruct
     public void initMethod() {
         host = appConfigs.getKcserver_host();
-        if(appConfigs.isDebug()){
+        if(appConfigs.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -93,7 +94,7 @@ public class Start2Downloader {
             if(!downloadResult.containsKey(FileTypes.Ship)){
                 downloadResult.put(FileTypes.Ship, new ArrayList());
             }
-            List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 10);
+            List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadShip(item, true), executorService)
 //                                .thenApply(h->h)
@@ -110,7 +111,7 @@ public class Start2Downloader {
             if(!downloadResult.containsKey(FileTypes.Ship)){
                 downloadResult.put(FileTypes.Ship, new ArrayList());
             }
-            List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 10);
+            List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 5);
             CompletableFuture[] cfs = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadShip(item, false), executorService)
                                 .whenComplete((s, e) -> {
@@ -225,7 +226,7 @@ public class Start2Downloader {
             List<Api_mst_mapbgm> temp = new ArrayList();
             start2PatchEntity.getNewMapbgm().forEach((k, v) -> temp.add(v));
             
-            List<List<Api_mst_mapbgm>> _list = Lists.partition(temp, 10);
+            List<List<Api_mst_mapbgm>> _list = Lists.partition(temp, 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadNewMapbgm(item), executorService)
                                 .whenComplete((s, e) -> {
@@ -246,7 +247,7 @@ public class Start2Downloader {
             if(!downloadResult.containsKey(FileTypes.Bgm)){
                 downloadResult.put(FileTypes.Bgm, new ArrayList());
             }
-            List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getNewBgm(), 10);
+            List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getNewBgm(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadBgm(item, true), executorService)
                                 .whenComplete((s, e) -> {
@@ -260,7 +261,7 @@ public class Start2Downloader {
             if(!downloadResult.containsKey(FileTypes.Bgm)){
                 downloadResult.put(FileTypes.Bgm, new ArrayList());
             }
-            List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getModifiedBgm(), 10);
+            List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getModifiedBgm(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadBgm(item, false), executorService)
                                 .whenComplete((s, e) -> {
@@ -281,7 +282,7 @@ public class Start2Downloader {
         if(isDownloadVoice){
             if(!start2PatchEntity.getNewShip().isEmpty()) {
 //                downloadResult.put(FileTypes.ShipVoice, (Map<Boolean, List<DownloadStatus>>) (new ConcurrentHashMap()).put(true, (new ArrayList())));
-                List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 10);
+                List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 5);
                 CompletableFuture[] cfs = _list.stream()
                     .map(item -> CompletableFuture.supplyAsync(() -> downloadVoice(item, true), executorService)
                                     .whenComplete((s, e) -> {
@@ -293,7 +294,7 @@ public class Start2Downloader {
             }
             if(!start2PatchEntity.getModifiedShip().isEmpty()) {
 //                downloadResult.put(FileTypes.ShipVoice, (Map<Boolean, List<DownloadStatus>>) (new ConcurrentHashMap()).put(false, (new ArrayList())));
-                List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 10);
+                List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 5);
                 CompletableFuture[] cfs = _list.stream()
                     .map(item -> CompletableFuture.supplyAsync(() -> downloadVoice(item, false), executorService)
                                     .whenComplete((s, e) -> {
@@ -336,6 +337,7 @@ public class Start2Downloader {
     }
     
     private int downloadShip(List<CombinedShipEntity> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         list.forEach(item -> {
             for(BaseStart2Enum type:ShipTypes.values()){
@@ -356,7 +358,7 @@ public class Start2Downloader {
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, Integer.valueOf(item.getApi_version().get(0)));
                 String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
-                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig);
+                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
                 downloadStatus.setFilename(realname);
                 downloadStatus.setId(item.getApi_id());
@@ -385,6 +387,7 @@ public class Start2Downloader {
     }
     
     private int downloadSlotitem(List<Api_mst_slotitem> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         list.forEach(item -> {
             for(BaseStart2Enum type:SlotTypes.values()){
@@ -401,7 +404,7 @@ public class Start2Downloader {
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, item.getApi_version());
                 String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
-                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig);
+                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
                 downloadStatus.setFilename(realname);
                 downloadStatus.setId(item.getApi_id());
@@ -430,6 +433,7 @@ public class Start2Downloader {
     }
     
     private int downloadFurniture(List<CombinedFurnitureEntity> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         list.forEach(item -> {
             String prePath = null;
@@ -464,7 +468,7 @@ public class Start2Downloader {
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, obfsname, item.getApi_version());
             String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
             String path = String.format("%s/%s.png", folder, obfsname);
-            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".png", requestConfig);
+            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".png", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setFilename(obfsname);
             downloadStatus.setId(item.getApi_id());
@@ -492,6 +496,7 @@ public class Start2Downloader {
     }
     
     private void downloadUseitem(List<Api_mst_useitem> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
@@ -502,13 +507,13 @@ public class Start2Downloader {
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
             String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
             String path = String.format("%s/%s.png", folder, filename);
-            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig);
+            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             if(fileDataEntity == null) {
                 prePath = "kcs2/resources/useitem/card";
                 url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
                 folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
                 path = String.format("%s/%s.png", folder, filename);
-                fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig);
+                fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             }
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setFilename(filename);
@@ -535,6 +540,7 @@ public class Start2Downloader {
     }
     
     private void downloadPayitem(List<Api_mst_payitem> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/img/item";
         int version = (int) (Math.random()*90 + 10);
@@ -542,7 +548,7 @@ public class Start2Downloader {
         String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
         String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
         String path = String.format("%s/%s.png", folder, filename);
-        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig);
+        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
         DownloadStatus downloadStatus = new DownloadStatus();
         downloadStatus.setFilename(filename);
         downloadStatus.setId(-1);
@@ -567,6 +573,7 @@ public class Start2Downloader {
     }
     
     private void downloadMapinfo(List<Api_mst_mapinfo> list, Map<Integer, Api_mst_mapbgm> hashmap, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
@@ -575,7 +582,7 @@ public class Start2Downloader {
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
             String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
             String path = String.format("%s/%s.png", folder, filename);
-            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig);
+            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             
             Api_mst_mapbgm api_mst_mapbgm = hashmap.get(item.getApi_id());
             
@@ -604,18 +611,19 @@ public class Start2Downloader {
     }
     
     private int downloadNewMapbgm(List<Api_mst_mapbgm> list){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/battle";
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
             if(item.getApi_map_bgm().get(0).equals(item.getApi_map_bgm().get(1))){
-                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_map_bgm().get(0), version, true);
+                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_map_bgm().get(0), version, true, closeableHttpClient);
                 if(fileDataEntity != null){
                     dblist.add(fileDataEntity);
                 }
             } else {
                 IntStream.range(0, 1).forEach(index -> {
-                    FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_map_bgm().get(index), version, true);
+                    FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_map_bgm().get(index), version, true, closeableHttpClient);
                     if(fileDataEntity != null){
                         dblist.add(fileDataEntity);
                     }
@@ -623,13 +631,13 @@ public class Start2Downloader {
             }
             
             if(item.getApi_boss_bgm().get(0).equals(item.getApi_boss_bgm().get(1))){
-                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_boss_bgm().get(0), version, true);
+                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_boss_bgm().get(0), version, true, closeableHttpClient);
                 if(fileDataEntity != null){
                     dblist.add(fileDataEntity);
                 }
             } else {
                 IntStream.range(0, 1).forEach(index -> {
-                    FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_boss_bgm().get(index), version, true);
+                    FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_boss_bgm().get(index), version, true, closeableHttpClient);
                     if(fileDataEntity != null){
                         dblist.add(fileDataEntity);
                     }
@@ -637,7 +645,7 @@ public class Start2Downloader {
             }
             
             if(item.getApi_moving_bgm() > 0){
-                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_moving_bgm(), version, true);
+                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(item, prePath, item.getApi_moving_bgm(), version, true, closeableHttpClient);
                 if(fileDataEntity != null){
                     dblist.add(fileDataEntity);
                 }
@@ -651,6 +659,7 @@ public class Start2Downloader {
     }
     
     private int downloadModifiedMapbgm(Map<Integer, List<Integer>> map){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/battle";
         int version = (int) (Math.random()*90 + 10);
@@ -659,7 +668,7 @@ public class Start2Downloader {
                 if(list.get(index).equals(-1)){
                     return;
                 }
-                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(null, prePath, list.get(index), version, false);
+                FileDataEntity fileDataEntity = getMapbgmFileDataEntity(null, prePath, list.get(index), version, false, closeableHttpClient);
                 if(index == 4){ //api_moving_bgm
                     
                 }
@@ -674,12 +683,12 @@ public class Start2Downloader {
         return rs;
     }
     
-    private FileDataEntity getMapbgmFileDataEntity(Api_mst_mapbgm item, String prePath, int id, int version, boolean isNew){
+    private FileDataEntity getMapbgmFileDataEntity(Api_mst_mapbgm item, String prePath, int id, int version, boolean isNew, CloseableHttpClient closeableHttpClient){
         String obfsname = BaseUrl.getItemUrl("bgm", id, "battle");
         String url = String.format("%s/%s/%s.mp3?version=%s", host, prePath, obfsname, version);
         String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
         String path = String.format("%s/%s.mp3", folder, obfsname);
-        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig);
+        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig, closeableHttpClient);
         int itemid = (item != null)? item.getApi_id(): -1;
         DownloadStatus downloadStatus = new DownloadStatus();
         downloadStatus.setFilename(obfsname);
@@ -701,8 +710,9 @@ public class Start2Downloader {
         downloadResult.get(FileTypes.Mapbgm).add(downloadStatus);
         return fileDataEntity;
     }
-    
+
     private int downloadBgm(List<Api_mst_bgm> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/port";
         int version = (int) (Math.random()*90 + 10);
@@ -711,7 +721,7 @@ public class Start2Downloader {
             String url = String.format("%s/%s/%s.mp3?version=%s", host, prePath, obfsname, version);
             String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
             String path = String.format("%s/%s.mp3", folder, obfsname);
-            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig);
+            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setFilename(obfsname);
             downloadStatus.setId(item.getApi_id());
@@ -739,13 +749,13 @@ public class Start2Downloader {
     }
     
     public int downloadVoice(List<CombinedShipEntity> list, boolean isNew){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         list.forEach(item -> {
             int shipID = item.getApi_id();
             if(shipID >= 1500){return;}
             List<String>  memberList = new ArrayList<>();
             String voiceName;
-            RequestConfig rc = requestConfig;
             String prePath = String.format("kcs/sound/kc%s", item.getApi_filename());
             for (int i=1; i<KeyArrayValue.vcKey.length; i++){
 //                    voiceName=String.valueOf((shipID + 7) * 17 * (KeyArrayValue.vcKey[i] - KeyArrayValue.vcKey[i - 1]) % 99173 + 100000);
@@ -756,7 +766,7 @@ public class Start2Downloader {
                 String url = String.format("%s/%s/%s.mp3", host, prePath, _voiceName);
                 String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
                 String path = String.format("%s/%s.mp3", folder, _voiceName);
-                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, _voiceName+".mp3", rc);
+                FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, _voiceName+".mp3", requestConfig, closeableHttpClient);
                 if(fileDataEntity != null){
                     fileDataEntity.setItemid(shipID);
                         fileDataEntity.setFilename(_voiceName+".mp3");
@@ -775,12 +785,13 @@ public class Start2Downloader {
     }
     
     public boolean downloadCore(){
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         String prePath = "kcs";
         String filename = "Core";
         String url = String.format("%s/%s/%s.png", host, prePath, filename);
         String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
         String path = String.format("%s/%s.png", folder, filename);
-        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig);
+        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
         
         
         return false;

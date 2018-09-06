@@ -34,6 +34,10 @@ public class FileDataService {
         return fileDataMapper.selectAllFileData(TableName.getDataLastmodifiedTable());
     }
     
+    public List<FileDataEntity> getTypeData(FileDataEntity fileDataEntity) {
+        return fileDataMapper.selectTypeFileData(TableName.getDataLastmodifiedTable(), fileDataEntity);
+    }
+    
     public int insertOne(FileDataEntity fileDataEntity) {
         if(!utilsService.existTable(TableName.getDataLastmodifiedTable())){
             return -1;

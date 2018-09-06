@@ -18,7 +18,8 @@ import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 public interface FileDataMapper {
     @MapKey("path")
     Map<String, FileDataEntity> selectAllFileData(@Param("tablename") String tablename);
-
+    
+    List<FileDataEntity> selectTypeFileData(@Param("tablename") String tablename, @Param("item") FileDataEntity fileDataEntity);
     int insertOne(@Param("tablename") String tablename, @Param("item") FileDataEntity fileDataEntity);
     int insertBatch(@Param("tablename") String tablename,@Param("list") List<FileDataEntity> list);
     int updateBatch(@Param("tablename") String tablename, @Param("list") List<FileDataEntity> list);

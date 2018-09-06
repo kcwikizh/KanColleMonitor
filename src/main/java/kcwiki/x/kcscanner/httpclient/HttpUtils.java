@@ -16,6 +16,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -140,11 +142,11 @@ public class HttpUtils {
         throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
     
-    public static FileDataEntity downloadAndGetData(String url, String filefolder, String filename, RequestConfig config) throws ExceptionBase {
+    public static FileDataEntity downloadAndGetData(String url, String filefolder, String filename, RequestConfig config, CloseableHttpClient httpclient) throws ExceptionBase {
         if(!url.startsWith("http")) {
             url = "http://" + url;
         }
-        
+        boolean selfClose = false;
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
         try{
             httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");  
@@ -152,7 +154,10 @@ public class HttpUtils {
                 new File(filefolder).mkdirs();
             RandomAccessFile file = null;
             FileDataEntity fileDataEntity = new FileDataEntity();
-            try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            if(httpclient == null){
+                httpclient = HttpClients.createDefault();
+                selfClose = true;
+            }
                 try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                     if (300 >= response.getCode()) {
                         file = new RandomAccessFile(filefolder + FILESEPARATOR + filename, "rw");
@@ -167,19 +172,15 @@ public class HttpUtils {
                         }
                         fileDataEntity.setLastmodified(response.getFirstHeader("Last-Modified").getValue());
                     }
+                }finally {
+                    if (file != null)
+                        file.close();
                 }
-            } finally {
-                if (file != null)
-                    file.close();
-            }
+            
             if(StringUtils.isBlank(fileDataEntity.getLastmodified())){
                 File _file = new File(filefolder + FILESEPARATOR + filename);
                 if(_file.exists())
                     _file.delete();
-                if(url.contains("useitem/card_") || url.contains("useitem/card") || 
-                        url.contains("airunit_banner") || url.contains("airunit_fairy") || url.contains("airunit_name") || url.contains("btxt_flat") ||
-                        url.contains("kcs/sound"))
-                    return null;
                 LOG.error("{}下载失败。", url);
                 return null;
             }
@@ -192,7 +193,14 @@ public class HttpUtils {
         }catch(IOException e){
             ExceptionUtils.getStackTrace(e);
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
-        }  
+        }finally{
+            if(selfClose)
+                try {
+                    httpclient.close();
+                } catch (IOException ex) {
+
+                }
+        }
         return null;
 //        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
@@ -227,14 +235,16 @@ public class HttpUtils {
     public static FileDataEntity scanFile(String url, CloseableHttpClient httpclient, RequestConfig config, String filefolder, String filename) {
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
         String filepath = String.format("%s%s%s", filefolder, FILESEPARATOR, filename);
+        RandomAccessFile file = null;
         try{
             httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");  
             if(!new File(filefolder).exists())
                 new File(filefolder).mkdirs();
-            final RandomAccessFile file = new RandomAccessFile(filepath, "rw");
+            
             String lastmodified = null;
                 try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                     if (300 >= response.getCode()) {
+                        file = new RandomAccessFile(filepath, "rw");
                         lastmodified = response.getFirstHeader("Last-Modified").getValue();
                         HttpEntity en = response.getEntity();
                         try (InputStream in = en.getContent()) {
@@ -244,12 +254,10 @@ public class HttpUtils {
                             while (-1 != (len = in.read(buf))) {
                                 file.write(buf, 0, len);
                             }
-                            file.close();
                         }
                     }
                     
                 }
-            
             FileDataEntity fileDataEntity = new FileDataEntity();
             fileDataEntity.setHash(CommontUtils.getFileHex(filepath));
             fileDataEntity.setTimestamp(new Date());
@@ -262,7 +270,14 @@ public class HttpUtils {
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
-        }  
+        }finally{
+            if (file != null)
+                try {
+                    file.close();
+            } catch (IOException ex) {
+                
+            }
+        }
         return null;
     }
     

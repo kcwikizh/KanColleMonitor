@@ -27,7 +27,7 @@ public class SpringUtils implements ApplicationContextAware {
         if(SpringUtils.applicationContext == null){  
             SpringUtils.applicationContext  = applicationContext;  
         }  
-        System.out.println("---------------com.ilex.jiutou.util.Test.Main.SubPackage.SpringUtil---------------");  
+        System.out.println("---------------kcwiki.x.kcscanner.tools.SpringUtil---------------");  
     }  
   
     //获取applicationContext  

@@ -52,22 +52,22 @@ public class Start2Controller {
     @Autowired
     EmailService emailService;
     
-    private Start2 start2PatchData = null;
+    private Start2 start2Data = null;
     
     public boolean getLatestStart2Data() {
         Date date = new Date();
-        String start2raw = getStart2Data();
+        String start2raw = fetchStart2OnlineData();
         if(start2raw != null) {
             Start2DataEntity latestData = start2DataService.getLatestData();
             if(latestData != null) {
                 JsonNode patch = start2Utils.getPatch(latestData.getData(), start2raw);
                 if(patch != null) {
-                    start2PatchData = start2Utils.jsonnode2start2(patch);
+                    start2Data = start2Utils.jsonnode2start2(patch);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
             } else {
-                start2PatchData = start2Utils.start2pojo(start2raw);
+                start2Data = start2Utils.start2pojo(start2raw);
                 insertStart2Data(start2raw, date);
                 return true;
             }
@@ -84,8 +84,11 @@ public class Start2Controller {
         start2DataService.insertOne(start2DataEntity);
     }
     
-    public String getStart2Data() {
-        autoLogin.setConfig(true);
+    public String fetchStart2OnlineData() {
+        if(appConfigs.isAllow_use_proxy())
+            autoLogin.setConfig(true);
+        else 
+            autoLogin.setConfig(false);
         autoLogin.setUser_name(appConfigs.getKcserver_account_username());
         autoLogin.setUser_pwd(appConfigs.getKcserver_account_password());
         try{
@@ -107,10 +110,10 @@ public class Start2Controller {
     }
 
     /**
-     * @return the start2PatchData
+     * @return the start2Data
      */
-    public Start2 getStart2PatchData() {
-        return start2PatchData;
+    public Start2 getStart2Data() {
+        return start2Data;
     }
     
 }
