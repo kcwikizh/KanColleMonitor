@@ -45,7 +45,7 @@ public class UploadStart2 extends BaseHttpClient {
         
         try {
                 
-                try (CloseableHttpClient httpclient = HttpClients.custom().build()) {
+                try (CloseableHttpClient _httpclient = HttpClients.custom().build()) {
                     final List<NameValuePair> nvps = new ArrayList<>();
                     HttpPost httpPost = new HttpPost(appConfigs.getKcwiki_api_upload_start2_url());
                     httpPost.setHeader("Host", "acc.kcwiki.org");
@@ -61,7 +61,7 @@ public class UploadStart2 extends BaseHttpClient {
                     nvps.add(new BasicNameValuePair("data", startdata));
                     httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                     
-                    try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                    try (CloseableHttpResponse response = _httpclient.execute(httpPost)) {
                         InputStream in=response.getEntity().getContent();
                         String retVal = readStream(in);
                         if(retVal.contains("data invalid")){

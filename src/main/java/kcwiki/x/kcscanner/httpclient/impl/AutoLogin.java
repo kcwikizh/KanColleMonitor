@@ -329,7 +329,7 @@ public class AutoLogin extends BaseHttpClient {
                 if(m.find()){
                     netgame_mid=m.group(1);
                 }
-                p=Pattern.compile("url=http%3A%2F%2F(.*)%2Fgadget.xml");
+                p=Pattern.compile("url=http%3A%2F%2F(.*)%2Fgadget_html5.xml");
                 m=p.matcher(netgame_osapi_url);
                 if(m.find()){
                     netgame_server=m.group(1);
@@ -347,6 +347,63 @@ public class AutoLogin extends BaseHttpClient {
             }else{
                 return false;
             }
+        return true;
+    }
+    
+    private boolean DataRequest() throws IOException {
+        String url=String.format("http://203.104.209.7/kcsapi/api_world/get_id/%s/1/%d", netgame_owner_id, System.currentTimeMillis());
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setConfig(config);
+        httpPost.setHeader("Host", "osapi.dmm.com");  
+        httpPost.setHeader("connection", "keep-alive");  
+        //httpPost.setHeader("Content-length", String.valueOf(mydata.length));    
+        httpPost.setHeader("Origin", "http://osapi.dmm.com"); 
+        httpPost.setHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36");  
+        httpPost.setHeader("Accept", "*/*"); 
+        httpPost.setHeader("DNT", "1");
+        httpPost.setHeader("Referer", netgame_osapi_url);  
+        httpPost.setHeader("Accept-Encoding", "gzip, deflate");  
+        httpPost.setHeader("Accept-Language", "zh-CN,zh;q=0.8");  
+        
+        final List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("url", "http://"+MRR_world+"/kcsapi/api_auth_member/dmmlogin/"+netgame_owner_id+"/1/"+MRR_timecode));
+        nvps.add(new BasicNameValuePair("httpMethod", "GET"));
+        nvps.add(new BasicNameValuePair("headers", ""));
+        nvps.add(new BasicNameValuePair("postData", ""));
+        nvps.add(new BasicNameValuePair("authz", "signed"));
+        nvps.add(new BasicNameValuePair("st", netgame_st));
+        nvps.add(new BasicNameValuePair("contentType", "JSON"));
+        nvps.add(new BasicNameValuePair("numEntries", "3"));
+        nvps.add(new BasicNameValuePair("getSummaries", "false"));
+        nvps.add(new BasicNameValuePair("signOwner", "true"));
+        nvps.add(new BasicNameValuePair("signViewer", "true"));
+        nvps.add(new BasicNameValuePair("gadget", "http://"+netgame_server+"/gadget.xml"));
+        nvps.add(new BasicNameValuePair("container", "dmm"));
+        nvps.add(new BasicNameValuePair("bypassSpecCache", ""));
+        nvps.add(new BasicNameValuePair("getFullHeaders", "false"));
+        nvps.add(new BasicNameValuePair("oauthState", ""));
+        nvps.add(new BasicNameValuePair("OAUTH_SIGNATURE_PUBLICKEY", "key_2018"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            for(Cookie c:cookies){
+                cookieStore.addCookie(c);
+            }
+
+        try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                LOG.debug("Code:{}, Phrase:{}", response.getCode(), response.getReasonPhrase());
+                InputStream in=response.getEntity().getContent();
+                String retVal = readStream(in);
+                p=Pattern.compile("api_token\\W+([\\d|\\w]+)");
+                m=p.matcher(retVal);
+                if(m.find()){
+                    MR_token=m.group(1);
+                }
+                p=Pattern.compile("api_starttime\\W+([\\d]+)");
+                m=p.matcher(retVal);
+                if (m.find()) {
+                    MR_starttime=m.group(1);
+                }
+                cookies = cookieStore.getCookies();
+        }
         return true;
     }
     
@@ -458,7 +515,7 @@ public class AutoLogin extends BaseHttpClient {
     
     private boolean Start2() throws IOException {
         String referer = "http://"+MRR_world+"/kcs/mainD2.swf?api_token="+MR_token+"&api_starttime="+MR_starttime+"/[[DYNAMIC]]/1"; 
-        String url="http://"+MRR_world+"/kcsapi/api_start2";
+        String url="http://"+MRR_world+"/kcsapi/api_start2/getData";
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(config);
         httpPost.setHeader("Host", MRR_world);  
@@ -525,6 +582,12 @@ public class AutoLogin extends BaseHttpClient {
                     break;
                 }
             }
+//            while(true){
+//                if(DataRequest()){
+//                    messagePublisher.publish("服务器ID和IP地址获取成功！", PublishTypes.Admin, PublishStatus.SUCCESS); 
+//                    break;
+//                }
+//            }
             while(true){
                 if(MakeRequestRefresh()){
                     messagePublisher.publish("游戏Token获取成功！", PublishTypes.Admin, PublishStatus.SUCCESS); 

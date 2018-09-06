@@ -17,20 +17,27 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author x5171
  */
+@Component
+@Scope("prototype")
 public class BaseHttpClient {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BaseHttpClient.class);
     
     @Autowired
     protected MessagePublisher messagePublisher;
+    @Autowired
+    AppConfigs appConfigs;
     
     //设置连接管理器
     protected PoolingHttpClientConnectionManager connManager ;
@@ -41,8 +48,7 @@ public class BaseHttpClient {
     
     public void setConfig(boolean useProxy){
         if(useProxy) {
-//            HttpHost proxy = new HttpHost(AppDataCache.appConfigs.getProxy_host(), AppDataCache.appConfigs.getProxy_port());
-            HttpHost proxy = new HttpHost("127.0.0.1", 8888);
+            HttpHost proxy = new HttpHost(appConfigs.getProxy_host(), appConfigs.getProxy_port());
             config = RequestConfig.custom().setProxy(proxy).setRedirectsEnabled(true).build();
         } else {
             config = RequestConfig.custom().setRedirectsEnabled(false).build();
