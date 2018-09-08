@@ -63,6 +63,10 @@ public class Start2Analyzer {
      * @return 
     */
     public Start2PatchEntity getDiffStart2(List<JsonPatchEntity> jsonPatchEntityList, Start2 secondaryStart2, Start2 primaryStart2){
+        if(secondaryStart2 == null)
+            secondaryStart2 = new Start2();
+        if(primaryStart2 == null)
+            return null;
         IdMappedStart2Entity _primaryStart2Entity = new IdMappedStart2Entity();
         IdMappedStart2Entity _secondaryStart2Entity = new IdMappedStart2Entity();
         Start2PreprocessingStage1(primaryStart2, _primaryStart2Entity);

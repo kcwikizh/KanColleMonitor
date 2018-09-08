@@ -15,9 +15,12 @@ import org.springframework.context.annotation.PropertySource;
  * http://www.baeldung.com/properties-with-spring#java
  */
 @Configuration
-@PropertySource(value={"classpath:configuration/appconfig/appconfig.properties"})
+@PropertySource(value={"file:${user.dir}/configuration/appconfig/appconfig.properties"})
 public class AppConfigs {
-
+    
+    
+    @Value("${user.dir}")
+    private String system_user_dir;     
     @Value("${global.useproxy}")
     private boolean allow_use_proxy;
     @Value("${global.proxyhost}")
@@ -482,6 +485,20 @@ public class AppConfigs {
      */
     public void setFolder_webroot(String folder_webroot) {
         this.folder_webroot = folder_webroot;
+    }
+
+    /**
+     * @return the system_user_dir
+     */
+    public String getSystem_user_dir() {
+        return system_user_dir;
+    }
+
+    /**
+     * @param system_user_dir the system_user_dir to set
+     */
+    public void setSystem_user_dir(String system_user_dir) {
+        this.system_user_dir = system_user_dir;
     }
 
 }

@@ -9,7 +9,7 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum FileTypes implements BaseEnum {
+public enum FileType implements BaseEnum {
     Core(0),
     ShipVoice(1),
     Ship(2),
@@ -24,7 +24,7 @@ public enum FileTypes implements BaseEnum {
     
     private int code;
     
-    FileTypes(int code) {
+    FileType(int code) {
         this.code = code;
     }
     

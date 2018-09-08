@@ -6,7 +6,7 @@
 package kcwiki.x.kcscanner.exception;
 
 import kcwiki.x.kcscanner.types.KcServerStatus;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 import kcwiki.x.kcscanner.types.ServiceTypes;
 
 /**
@@ -14,7 +14,7 @@ import kcwiki.x.kcscanner.types.ServiceTypes;
  * @author x5171
  */
 
-public class ExceptionBase extends RuntimeException {
+public class BaseException extends RuntimeException {
 
     /**
      * @return the kcServerStatus
@@ -35,7 +35,7 @@ public class ExceptionBase extends RuntimeException {
     /**
      * 错误严重类型
      */
-    private MsgTypes msgType;
+    private MessageLevel msgType;
     
     /**
      * 错误服务类型
@@ -54,67 +54,67 @@ public class ExceptionBase extends RuntimeException {
      * @param message
      *            信息描述
      */
-    public ExceptionBase(String message)
+    public BaseException(String message)
     {
         super(message);
     }
     
-    public ExceptionBase(Throwable cause)
+    public BaseException(Throwable cause)
     {
         super(cause);
     }
     
-    public ExceptionBase(String message, Throwable cause)
+    public BaseException(String message, Throwable cause)
     {
         super(message, cause);
     }
     
-    public ExceptionBase(ServiceTypes serviceType, MsgTypes msgType)
+    public BaseException(ServiceTypes serviceType, MessageLevel msgType)
     {
         this.msgType = msgType;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, int code)
+    public BaseException(ServiceTypes serviceType, int code)
     {
         this.code = code;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, String message)
+    public BaseException(ServiceTypes serviceType, String message)
     {
         super(message);
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, KcServerStatus kcServerStatus)
+    public BaseException(ServiceTypes serviceType, KcServerStatus kcServerStatus)
     {
         this.kcServerStatus = kcServerStatus;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, KcServerStatus kcServerStatus, String message)
+    public BaseException(ServiceTypes serviceType, KcServerStatus kcServerStatus, String message)
     {
         super(message);
         this.kcServerStatus = kcServerStatus;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, MsgTypes msgType, String message)
+    public BaseException(ServiceTypes serviceType, MessageLevel msgType, String message)
     {
         super(message);
         this.msgType = msgType;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, MsgTypes msgType, int code)
+    public BaseException(ServiceTypes serviceType, MessageLevel msgType, int code)
     {
         this.code = code;
         this.msgType = msgType;
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, MsgTypes msgType, int code, String message)
+    public BaseException(ServiceTypes serviceType, MessageLevel msgType, int code, String message)
     {
         super(message);
         this.code = code;
@@ -122,7 +122,7 @@ public class ExceptionBase extends RuntimeException {
         this.serviceType = serviceType;
     }
     
-    public ExceptionBase(ServiceTypes serviceType, int code, String message)
+    public BaseException(ServiceTypes serviceType, int code, String message)
     {
         super(message);
         this.code = code;
@@ -133,14 +133,14 @@ public class ExceptionBase extends RuntimeException {
     /**
      * @return the msgType
      */
-    public MsgTypes getMsgType() {
+    public MessageLevel getMsgType() {
         return msgType;
     }
 
     /**
      * @param msgType the msgType to set
      */
-    public void setMsgType(MsgTypes msgType) {
+    public void setMsgType(MessageLevel msgType) {
         this.msgType = msgType;
     }
 

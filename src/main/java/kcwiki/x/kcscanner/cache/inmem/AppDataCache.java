@@ -5,13 +5,13 @@
  */
 package kcwiki.x.kcscanner.cache.inmem;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import kcwiki.x.kcscanner.database.entity.SystemScanEntity;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
 
 /**
  *
@@ -22,12 +22,16 @@ public class AppDataCache {
     public static Map<String, SystemScanEntity> systemScanEntitys = null;
     public static boolean isAppInit = false;
     public static boolean isReadyReceive = false;
+    public static boolean isScanTaskSuspend = true;
     
     public static Start2 start2data = null;
+    public static boolean isDownloadShipVoice = false;
     
     public static final Map<Integer, String> gameWorlds = new ConcurrentHashMap<>();
     public static final Map<Integer, String> world_Num2Name = new ConcurrentHashMap<>();
     public static final Map<String, String> stringCache = new ConcurrentHashMap<>();
+    public static final Map<String, String> worldVersionCache = new ConcurrentHashMap<>();
+    public static final Map<String, String> maintenanceInfo = new ConcurrentHashMap<>();
     
     public static final Set<String> existTables = new HashSet<>();
     

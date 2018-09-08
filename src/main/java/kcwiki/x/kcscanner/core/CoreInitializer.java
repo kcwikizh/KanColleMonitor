@@ -7,22 +7,30 @@ package kcwiki.x.kcscanner.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import javax.script.ScriptException;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
-import kcwiki.x.kcscanner.core.downloader.Start2Downloader;
 import kcwiki.x.kcscanner.core.files.FileController;
 import kcwiki.x.kcscanner.core.start2.Start2Controller;
-import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
-import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.database.entity.SystemScanEntity;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
-import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
+import kcwiki.x.kcscanner.initializer.AppConfigs;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_LASTMODIFIED;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
+import kcwiki.x.kcscanner.tools.JsonUtils;
+import kcwiki.x.kcscanner.tools.ScriptUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +46,8 @@ public class CoreInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(CoreInitializer.class);
     
     @Autowired
+    AppConfigs appConfigs;
+    @Autowired
     FileController fileController;
     @Autowired
     Start2Controller start2Controller;
@@ -45,22 +55,19 @@ public class CoreInitializer {
     SystemScanService systemScanService;
     @Autowired
     ControlCenter controlCenter;
-    @Autowired
-    Start2Analyzer start2Analyzer;
-    @Autowired
-    Start2Downloader start2Downloader;
-    @Autowired
-    Start2Utils start2Utils;
+    
     ObjectMapper objectMapper = new ObjectMapper();
     
     public void coreDataInit(){
         Date date = new Date();
         SystemScanEntity systemScanEntity = AppDataCache.systemScanEntitys.get(SCANNAME_START2);
+        String host = appConfigs.getKcserver_host();
+        if(!host.startsWith("http"))
+            host = "http://" + host;
         if(systemScanEntity == null || systemScanEntity.getInit() != 1) {
             start2Controller.getLatestStart2Data();
             AppDataCache.start2data = start2Controller.getStart2Data();
-            start2Analyzer.getDiffStart2(null, new Start2(),  AppDataCache.start2data);
-            start2Downloader.download(start2Analyzer.getStart2PatchEntity(), false);
+            start2Controller.downloadFile(true);
             
             systemScanEntity = new SystemScanEntity();
             systemScanEntity.setInit(1);
@@ -72,7 +79,7 @@ public class CoreInitializer {
         }
         systemScanEntity = AppDataCache.systemScanEntitys.get(SCANNAME_LASTMODIFIED);
         if(systemScanEntity == null || systemScanEntity.getInit() != 1) {
-            fileController.startScanner();
+            fileController.startScan(true);
             systemScanEntity = new SystemScanEntity();
             systemScanEntity.setInit(1);
             systemScanEntity.setName(SCANNAME_LASTMODIFIED);
@@ -81,7 +88,7 @@ public class CoreInitializer {
             systemScanService.insertOne(systemScanEntity);
             AppDataCache.systemScanEntitys.put(SCANNAME_LASTMODIFIED, systemScanEntity);
         }
-        controlCenter.startDownload();
+        
     }
     
     private String addTimeLine(String json, long timestamp){
@@ -93,12 +100,10 @@ public class CoreInitializer {
                 _list = objectMapper.readValue(json,
                     new TypeReference<List<Long>>(){});
             } catch (IOException ex) {
-                LOG.error("获取Start2原始数据转换为POJO时发生错误，数据格式可能有更改。错误代码为： {}{}", 
-                        LINESEPARATOR,
-                        ExceptionUtils.getStackTrace(ex));
+                LOG.error(ExceptionUtils.getStackTrace(ex));
             }
         }
         _list.add(timestamp);
-        return start2Utils.object2str(_list);
+        return JsonUtils.object2json(_list, null);
     }
 }

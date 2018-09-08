@@ -6,6 +6,9 @@
 package kcwiki.x.kcscanner.thread;
 
 import java.lang.reflect.Method;
+import kcwiki.x.kcscanner.initializer.AppInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 
 /**
@@ -13,14 +16,15 @@ import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
  * @author x5171
  */
 public class AsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(AsyncExceptionHandler.class);
 
     @Override
     public void handleUncaughtException(Throwable throwable, Method method, Object... obj) {
 
-        System.out.println("Exception Cause - " + throwable.getMessage());
-        System.out.println("Method name - " + method.getName());
+        LOG.error("AsyncException Cause - " + throwable.getMessage());
+        LOG.error("Method name - " + method.getName());
         for (Object param : obj) {
-            System.out.println("Parameter value - " + param);
+            LOG.error("Parameter value - " + param);
         }
     }
 }

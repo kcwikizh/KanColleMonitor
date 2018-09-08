@@ -25,7 +25,9 @@ public class ControlCenter {
     @Autowired
     Start2Controller start2Controller;
     
-    public void startDownload() {
+    public void initPeriodicTask(){
         
     }
+    
+    
 }

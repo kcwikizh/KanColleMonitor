@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
+import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.core.KeyArrayValue;
 import kcwiki.x.kcscanner.core.downloader.entity.DownloadStatus;
@@ -41,7 +42,7 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_slotitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_useitem;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.tools.CommontUtils;
-import kcwiki.x.kcscanner.types.FileTypes;
+import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -49,6 +50,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -56,6 +58,7 @@ import org.springframework.stereotype.Component;
  * @author x5171
  */
 @Component
+@Scope("prototype")
 public class Start2Downloader {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Downloader.class);
     
@@ -72,11 +75,14 @@ public class Start2Downloader {
     
     Date date = new Date();
     String host;
-    Map<FileTypes, List<DownloadStatus>> downloadResult = new ConcurrentHashMap();
+    private Map<FileType, List<DownloadStatus>> downloadResult = new ConcurrentHashMap();
+    private Map<FileType, List<FileDataEntity>> fileResult = new ConcurrentHashMap();
     
     @PostConstruct
     public void initMethod() {
         host = appConfigs.getKcserver_host();
+        if(StringUtils.isBlank(host))
+            LOG.error("KcServer地址为空");
         if(appConfigs.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
@@ -87,20 +93,23 @@ public class Start2Downloader {
     
     public void download(Start2PatchEntity start2PatchEntity, boolean isDownloadVoice) {
         ExecutorService executorService = Executors.newFixedThreadPool(16);
-        List<Integer> list = new ArrayList<>();
         List<CompletableFuture[]> asyncResults = new ArrayList();
-        
+        if(start2PatchEntity == null)
+            return;
         if(!start2PatchEntity.getNewShip().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Ship)){
-                downloadResult.put(FileTypes.Ship, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Ship)){
+                getDownloadResult().put(FileType.Ship, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Ship)){
+                getFileResult().put(FileType.Ship, new ArrayList());
             }
             List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadShip(item, true), executorService)
 //                                .thenApply(h->h)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Ship).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
 //            CompletableFuture[] cfs =  {CompletableFuture.supplyAsync(() -> downloadShip(_list.get(0), true), executorService)};
@@ -108,120 +117,153 @@ public class Start2Downloader {
             asyncResults.add(cfs);
         }
         if(!start2PatchEntity.getModifiedShip().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Ship)){
-                downloadResult.put(FileTypes.Ship, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Ship)){
+                getDownloadResult().put(FileType.Ship, new ArrayList());
             }
             List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 5);
             CompletableFuture[] cfs = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadShip(item, false), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Ship).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         
         if(!start2PatchEntity.getNewSlotitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Slotitem)){
-                downloadResult.put(FileTypes.Slotitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Slotitem)){
+                getDownloadResult().put(FileType.Slotitem, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Slotitem)){
+                getFileResult().put(FileType.Slotitem, new ArrayList());
             }
             List<List<Api_mst_slotitem>> _list = Lists.partition(start2PatchEntity.getNewSlotitem(), 10);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadSlotitem(item, true), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Slotitem).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         if(!start2PatchEntity.getModifiedSlotitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Slotitem)){
-                downloadResult.put(FileTypes.Slotitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Slotitem)){
+                getDownloadResult().put(FileType.Slotitem, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Slotitem)){
+                getFileResult().put(FileType.Slotitem, new ArrayList());
             }
             List<List<Api_mst_slotitem>> _list = Lists.partition(start2PatchEntity.getModifiedSlotitem(), 10);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadSlotitem(item, false), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Slotitem).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         
         if(!start2PatchEntity.getNewFurniture().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Furniture)){
-                downloadResult.put(FileTypes.Furniture, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Furniture)){
+                getDownloadResult().put(FileType.Furniture, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Furniture)){
+                getFileResult().put(FileType.Furniture, new ArrayList());
             }
             List<List<CombinedFurnitureEntity>> _list = Lists.partition(start2PatchEntity.getNewFurniture(), 10);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadFurniture(item, true), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Furniture).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         if(!start2PatchEntity.getModifiedFurniture().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Furniture)){
-                downloadResult.put(FileTypes.Furniture, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Furniture)){
+                getDownloadResult().put(FileType.Furniture, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Furniture)){
+                getFileResult().put(FileType.Furniture, new ArrayList());
             }
             List<List<CombinedFurnitureEntity>> _list = Lists.partition(start2PatchEntity.getModifiedFurniture(), 10);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadFurniture(item, false), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Furniture).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         
         if(!start2PatchEntity.getNewUseitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Useitem)){
-                downloadResult.put(FileTypes.Useitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Useitem)){
+                getDownloadResult().put(FileType.Useitem, new ArrayList());
             }
-            downloadUseitem(start2PatchEntity.getNewUseitem(), true);
+            if(!fileResult.containsKey(FileType.Useitem)){
+                getFileResult().put(FileType.Useitem, new ArrayList());
+            }
+            getFileResult().get(FileType.Useitem).addAll(downloadUseitem(start2PatchEntity.getNewUseitem(), true));
         }
         if(!start2PatchEntity.getModifiedUseitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Useitem)){
-                downloadResult.put(FileTypes.Useitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Useitem)){
+                getDownloadResult().put(FileType.Useitem, new ArrayList());
             }
-            downloadUseitem(start2PatchEntity.getModifiedUseitem(), false);
+            if(!fileResult.containsKey(FileType.Useitem)){
+                getFileResult().put(FileType.Useitem, new ArrayList());
+            }
+            getFileResult().get(FileType.Useitem).addAll(downloadUseitem(start2PatchEntity.getModifiedUseitem(), false));
         }
         
         if(!start2PatchEntity.getNewPayitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Payitem)){
-                downloadResult.put(FileTypes.Payitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Payitem)){
+                getDownloadResult().put(FileType.Payitem, new ArrayList());
             }
-            downloadPayitem(start2PatchEntity.getNewPayitem(), true);
+            if(!fileResult.containsKey(FileType.Payitem)){
+                getFileResult().put(FileType.Payitem, new ArrayList());
+            }
+            getFileResult().get(FileType.Payitem).addAll(downloadPayitem(start2PatchEntity.getNewPayitem(), true));
         }
         if(!start2PatchEntity.getModifiedPayitem().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Payitem)){
-                downloadResult.put(FileTypes.Payitem, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Payitem)){
+                getDownloadResult().put(FileType.Payitem, new ArrayList());
             }
-            downloadPayitem(start2PatchEntity.getModifiedPayitem(), false);
+            if(!fileResult.containsKey(FileType.Payitem)){
+                getFileResult().put(FileType.Payitem, new ArrayList());
+            }
+            getFileResult().get(FileType.Payitem).addAll(downloadPayitem(start2PatchEntity.getModifiedPayitem(), false));
         }
         
         if(!start2PatchEntity.getNewMapinfo().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Mapinfo)){
-                downloadResult.put(FileTypes.Mapinfo, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Mapinfo)){
+                getDownloadResult().put(FileType.Mapinfo, new ArrayList());
             }
-            downloadMapinfo(start2PatchEntity.getNewMapinfo(), start2PatchEntity.getAllMapbgm(), true);
+            if(!fileResult.containsKey(FileType.Mapinfo)){
+                getFileResult().put(FileType.Mapinfo, new ArrayList());
+            }
+            getFileResult().get(FileType.Mapinfo).addAll(downloadMapinfo(start2PatchEntity.getNewMapinfo(), start2PatchEntity.getAllMapbgm(), true));
         }
         if(!start2PatchEntity.getModifiedMapinfo().isEmpty()) {
-            if(!downloadResult.containsKey(FileTypes.Mapinfo)){
-                downloadResult.put(FileTypes.Mapinfo, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Mapinfo)){
+                getDownloadResult().put(FileType.Mapinfo, new ArrayList());
             }
-            downloadMapinfo(start2PatchEntity.getModifiedMapinfo(), start2PatchEntity.getAllMapbgm(), false);
+            if(!fileResult.containsKey(FileType.Mapinfo)){
+                getFileResult().put(FileType.Mapinfo, new ArrayList());
+            }
+            getFileResult().get(FileType.Mapinfo).addAll(downloadMapinfo(start2PatchEntity.getModifiedMapinfo(), start2PatchEntity.getAllMapbgm(), false));
         }
         
         if(!start2PatchEntity.getNewMapbgm().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Mapbgm)){
-                downloadResult.put(FileTypes.Mapbgm, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Mapbgm)){
+                getDownloadResult().put(FileType.Mapbgm, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Mapbgm)){
+                getFileResult().put(FileType.Mapbgm, new ArrayList());
             }
             List<Api_mst_mapbgm> temp = new ArrayList();
             start2PatchEntity.getNewMapbgm().forEach((k, v) -> temp.add(v));
@@ -230,43 +272,52 @@ public class Start2Downloader {
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadNewMapbgm(item), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Mapbgm).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         if(!start2PatchEntity.getModifiedMapbgm().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Mapbgm)){
-                downloadResult.put(FileTypes.Mapbgm, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Mapbgm)){
+                getDownloadResult().put(FileType.Mapbgm, new ArrayList());
             }
-            downloadModifiedMapbgm(start2PatchEntity.getModifiedMapbgm());
+            if(!fileResult.containsKey(FileType.Mapbgm)){
+                getFileResult().put(FileType.Mapbgm, new ArrayList());
+            }
+            getFileResult().get(FileType.Mapbgm).addAll(downloadModifiedMapbgm(start2PatchEntity.getModifiedMapbgm()));
         }
         
         if(!start2PatchEntity.getNewBgm().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Bgm)){
-                downloadResult.put(FileTypes.Bgm, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Bgm)){
+                getDownloadResult().put(FileType.Bgm, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Bgm)){
+                getFileResult().put(FileType.Bgm, new ArrayList());
             }
             List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getNewBgm(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadBgm(item, true), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Bgm).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
         if(!start2PatchEntity.getModifiedBgm().isEmpty()){
-            if(!downloadResult.containsKey(FileTypes.Bgm)){
-                downloadResult.put(FileTypes.Bgm, new ArrayList());
+            if(!downloadResult.containsKey(FileType.Bgm)){
+                getDownloadResult().put(FileType.Bgm, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Bgm)){
+                getFileResult().put(FileType.Bgm, new ArrayList());
             }
             List<List<Api_mst_bgm>> _list = Lists.partition(start2PatchEntity.getModifiedBgm(), 5);
             CompletableFuture[] cfs  = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadBgm(item, false), executorService)
                                 .whenComplete((s, e) -> {
-                                    System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                    list.add(s);
+                                    System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                    getFileResult().get(FileType.Bgm).addAll(s);
                                 })
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
@@ -279,15 +330,21 @@ public class Start2Downloader {
             asyncResults.clear();
         }
         
-        if(isDownloadVoice){
+        if(AppDataCache.isDownloadShipVoice){
+            if(!downloadResult.containsKey(FileType.ShipVoice)){
+                getDownloadResult().put(FileType.ShipVoice, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.ShipVoice)){
+                getFileResult().put(FileType.ShipVoice, new ArrayList());
+            }
             if(!start2PatchEntity.getNewShip().isEmpty()) {
 //                downloadResult.put(FileTypes.ShipVoice, (Map<Boolean, List<DownloadStatus>>) (new ConcurrentHashMap()).put(true, (new ArrayList())));
                 List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getNewShip(), 5);
                 CompletableFuture[] cfs = _list.stream()
                     .map(item -> CompletableFuture.supplyAsync(() -> downloadVoice(item, true), executorService)
                                     .whenComplete((s, e) -> {
-                                        System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                        list.add(s);
+                                        System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                        getFileResult().get(FileType.ShipVoice).addAll(s);
                                     })
                 ).toArray(CompletableFuture[]::new);
                 asyncResults.add(cfs);
@@ -298,8 +355,8 @@ public class Start2Downloader {
                 CompletableFuture[] cfs = _list.stream()
                     .map(item -> CompletableFuture.supplyAsync(() -> downloadVoice(item, false), executorService)
                                     .whenComplete((s, e) -> {
-                                        System.out.println("任务"+s+"完成!result="+s+"，异常 e="+e+","+new Date());
-                                        list.add(s);
+                                        System.out.println("任务"+s.size()+"完成!result="+s.size()+"，异常 e="+e+","+new Date());
+                                        getFileResult().get(FileType.ShipVoice).addAll(s);
                                     })
                 ).toArray(CompletableFuture[]::new);
                 asyncResults.add(cfs);
@@ -336,9 +393,10 @@ public class Start2Downloader {
         return 0;
     }
     
-    private int downloadShip(List<CombinedShipEntity> list, boolean isNew){
+    private List<FileDataEntity> downloadShip(List<CombinedShipEntity> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         list.forEach(item -> {
             for(BaseStart2Enum type:ShipTypes.values()){
                 if(type.getTypeName().contains("card_round") || type.getTypeName().contains("icon_box"))
@@ -372,23 +430,22 @@ public class Start2Downloader {
                     fileDataEntity.setHash(CommontUtils.getFileHex(path));
                     fileDataEntity.setPath(String.format("%s/%s.png", urlPath, obfsname));
                     fileDataEntity.setTimestamp(date);
-                    fileDataEntity.setType(FileTypes.Ship);
+                    fileDataEntity.setType(FileType.Ship);
                     dblist.add(fileDataEntity);
                     downloadStatus.setHash(fileDataEntity.getHash());
                     downloadStatus.setIsSuccess(true);
                 }
-                downloadResult.get(FileTypes.Ship).add(downloadStatus);
+                resultlist.add(downloadStatus);
             }
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        getDownloadResult().get(FileType.Ship).addAll(resultlist);
+        return dblist;
     }
     
-    private int downloadSlotitem(List<Api_mst_slotitem> list, boolean isNew){
+    private List<FileDataEntity> downloadSlotitem(List<Api_mst_slotitem> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         list.forEach(item -> {
             for(BaseStart2Enum type:SlotTypes.values()){
                 String urlPath = "kcs2/resources/slot/" + type.getTypeName();
@@ -418,23 +475,22 @@ public class Start2Downloader {
                     fileDataEntity.setHash(CommontUtils.getFileHex(path));
                     fileDataEntity.setPath(String.format("%s/%s.png", urlPath, obfsname));
                     fileDataEntity.setTimestamp(date);
-                    fileDataEntity.setType(FileTypes.Slotitem);
+                    fileDataEntity.setType(FileType.Slotitem);
                     dblist.add(fileDataEntity);
                     downloadStatus.setHash(fileDataEntity.getHash());
                     downloadStatus.setIsSuccess(true);
                 }
-                downloadResult.get(FileTypes.Slotitem).add(downloadStatus);
+                resultlist.add(downloadStatus);
             }
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        getDownloadResult().get(FileType.Slotitem).addAll(resultlist);
+        return dblist;
     }
     
-    private int downloadFurniture(List<CombinedFurnitureEntity> list, boolean isNew){
+    private List<FileDataEntity> downloadFurniture(List<CombinedFurnitureEntity> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         list.forEach(item -> {
             String prePath = null;
             String obfsname = null;
@@ -482,22 +538,21 @@ public class Start2Downloader {
                 fileDataEntity.setHash(CommontUtils.getFileHex(path));
                 fileDataEntity.setPath(String.format("%s/%s.png", prePath, obfsname));
                 fileDataEntity.setTimestamp(date);
-                fileDataEntity.setType(FileTypes.Furniture);
+                fileDataEntity.setType(FileType.Furniture);
                 dblist.add(fileDataEntity);
                 downloadStatus.setHash(fileDataEntity.getHash());
                 downloadStatus.setIsSuccess(true);
             }
-            downloadResult.get(FileTypes.Furniture).add(downloadStatus);
+            resultlist.add(downloadStatus);
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        getDownloadResult().get(FileType.Furniture).addAll(resultlist);
+        return dblist;
     }
     
-    private void downloadUseitem(List<Api_mst_useitem> list, boolean isNew){
+    private List<FileDataEntity> downloadUseitem(List<Api_mst_useitem> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
             String prePath = "kcs2/resources/useitem/card_";
@@ -528,20 +583,21 @@ public class Start2Downloader {
                 fileDataEntity.setHash(CommontUtils.getFileHex(path));
                 fileDataEntity.setPath(String.format("%s/%s.png", prePath, filename));
                 fileDataEntity.setTimestamp(date);
-                fileDataEntity.setType(FileTypes.Useitem);
+                fileDataEntity.setType(FileType.Useitem);
                 dblist.add(fileDataEntity);
                 downloadStatus.setHash(fileDataEntity.getHash());
                 downloadStatus.setIsSuccess(true);
             }
-            downloadResult.get(FileTypes.Useitem).add(downloadStatus);
+            resultlist.add(downloadStatus);
         });
-        if(!dblist.isEmpty())            
-            fileDataService.insertSelected(dblist);
+        getDownloadResult().get(FileType.Useitem).addAll(resultlist);
+        return dblist;
     }
     
-    private void downloadPayitem(List<Api_mst_payitem> list, boolean isNew){
+    private List<FileDataEntity> downloadPayitem(List<Api_mst_payitem> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         String prePath = "kcs2/img/item";
         int version = (int) (Math.random()*90 + 10);
         String filename = "item_payitemicon";
@@ -562,19 +618,19 @@ public class Start2Downloader {
             fileDataEntity.setHash(CommontUtils.getFileHex(path));
             fileDataEntity.setPath(String.format("%s/%s.png", prePath, filename));
             fileDataEntity.setTimestamp(date);
-            fileDataEntity.setType(FileTypes.Payitem);
+            fileDataEntity.setType(FileType.Payitem);
             dblist.add(fileDataEntity);
             downloadStatus.setHash(fileDataEntity.getHash());
             downloadStatus.setIsSuccess(true);
         }
-        downloadResult.get(FileTypes.Payitem).add(downloadStatus);
-        if(!dblist.isEmpty())            
-            fileDataService.insertSelected(dblist);
+        getDownloadResult().get(FileType.Payitem).add(downloadStatus);
+        return dblist;
     }
     
-    private void downloadMapinfo(List<Api_mst_mapinfo> list, Map<Integer, Api_mst_mapbgm> hashmap, boolean isNew){
+    private List<FileDataEntity> downloadMapinfo(List<Api_mst_mapinfo> list, Map<Integer, Api_mst_mapbgm> hashmap, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
             String prePath = "kcs2/resources/map/" + String.format("%03d", item.getApi_maparea_id());
@@ -599,18 +655,18 @@ public class Start2Downloader {
                 fileDataEntity.setHash(CommontUtils.getFileHex(path));
                 fileDataEntity.setPath(String.format("%s/%s.png", prePath, filename));
                 fileDataEntity.setTimestamp(date);
-                fileDataEntity.setType(FileTypes.Mapinfo);
+                fileDataEntity.setType(FileType.Mapinfo);
                 dblist.add(fileDataEntity);
                 downloadStatus.setHash(fileDataEntity.getHash());
                 downloadStatus.setIsSuccess(true);
             }
-            downloadResult.get(FileTypes.Mapinfo).add(downloadStatus);
+            resultlist.add(downloadStatus);
         });
-        if(!dblist.isEmpty())            
-            fileDataService.insertSelected(dblist);
+        getDownloadResult().get(FileType.Mapinfo).addAll(resultlist);
+        return dblist;
     }
     
-    private int downloadNewMapbgm(List<Api_mst_mapbgm> list){
+    private List<FileDataEntity> downloadNewMapbgm(List<Api_mst_mapbgm> list){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/battle";
@@ -652,13 +708,10 @@ public class Start2Downloader {
             }
             
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        return dblist;
     }
     
-    private int downloadModifiedMapbgm(Map<Integer, List<Integer>> map){
+    private List<FileDataEntity> downloadModifiedMapbgm(Map<Integer, List<Integer>> map){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/battle";
@@ -677,10 +730,7 @@ public class Start2Downloader {
                 }
             });
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        return dblist;
     }
     
     private FileDataEntity getMapbgmFileDataEntity(Api_mst_mapbgm item, String prePath, int id, int version, boolean isNew, CloseableHttpClient closeableHttpClient){
@@ -703,17 +753,18 @@ public class Start2Downloader {
             fileDataEntity.setHash(CommontUtils.getFileHex(path));
             fileDataEntity.setPath(String.format("%s/%s.mp3", prePath, obfsname));
             fileDataEntity.setTimestamp(date);
-            fileDataEntity.setType(FileTypes.Mapbgm);
+            fileDataEntity.setType(FileType.Mapbgm);
             downloadStatus.setHash(fileDataEntity.getHash());
             downloadStatus.setIsSuccess(true);
         }
-        downloadResult.get(FileTypes.Mapbgm).add(downloadStatus);
+        getDownloadResult().get(FileType.Mapbgm).add(downloadStatus);
         return fileDataEntity;
     }
 
-    private int downloadBgm(List<Api_mst_bgm> list, boolean isNew){
+    private List<FileDataEntity> downloadBgm(List<Api_mst_bgm> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         String prePath = "kcs2/resources/bgm/port";
         int version = (int) (Math.random()*90 + 10);
         list.forEach(item -> {
@@ -735,22 +786,21 @@ public class Start2Downloader {
                 fileDataEntity.setHash(CommontUtils.getFileHex(path));
                 fileDataEntity.setPath(String.format("%s/%s.mp3", prePath, obfsname));
                 fileDataEntity.setTimestamp(date);
-                fileDataEntity.setType(FileTypes.Bgm);
+                fileDataEntity.setType(FileType.Bgm);
                 dblist.add(fileDataEntity);
                 downloadStatus.setHash(fileDataEntity.getHash());
                 downloadStatus.setIsSuccess(true);
             }
-            downloadResult.get(FileTypes.Bgm).add(downloadStatus);
+            resultlist.add(downloadStatus);
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        getDownloadResult().get(FileType.Bgm).addAll(resultlist);
+        return dblist;
     }
     
-    public int downloadVoice(List<CombinedShipEntity> list, boolean isNew){
+    public List<FileDataEntity> downloadVoice(List<CombinedShipEntity> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
+        List<DownloadStatus> resultlist = new ArrayList<>();
         list.forEach(item -> {
             int shipID = item.getApi_id();
             if(shipID >= 1500){return;}
@@ -767,35 +817,43 @@ public class Start2Downloader {
                 String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
                 String path = String.format("%s/%s.mp3", folder, _voiceName);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, _voiceName+".mp3", requestConfig, closeableHttpClient);
+                DownloadStatus downloadStatus = new DownloadStatus();
+                downloadStatus.setFilename(_voiceName);
+                downloadStatus.setId(item.getApi_id());
+                downloadStatus.setName(item.getApi_name());
+                downloadStatus.setUrl(url);
+                downloadStatus.setPath(path);
+                downloadStatus.setIsNew(isNew);
                 if(fileDataEntity != null){
                     fileDataEntity.setItemid(shipID);
-                        fileDataEntity.setFilename(_voiceName+".mp3");
-                        fileDataEntity.setHash(CommontUtils.getFileHex(path));
-                        fileDataEntity.setPath(String.format("%s/%s.mp3", prePath, _voiceName));
-                        fileDataEntity.setTimestamp(date);
-                        fileDataEntity.setType(FileTypes.ShipVoice);
-                        dblist.add(fileDataEntity);
+                    fileDataEntity.setFilename(_voiceName+".mp3");
+                    fileDataEntity.setHash(CommontUtils.getFileHex(path));
+                    fileDataEntity.setPath(String.format("%s/%s.mp3", prePath, _voiceName));
+                    fileDataEntity.setTimestamp(date);
+                    fileDataEntity.setType(FileType.ShipVoice);
+                    dblist.add(fileDataEntity);
+                    downloadStatus.setHash(fileDataEntity.getHash());
+                    downloadStatus.setIsSuccess(true);
                 }
+                resultlist.add(downloadStatus);
             });
         });
-        int rs = 0;
-        if(!dblist.isEmpty())            
-            rs = fileDataService.insertSelected(dblist);
-        return rs;
+        getDownloadResult().get(FileType.ShipVoice).addAll(resultlist);
+        return dblist;
+    } 
+
+    /**
+     * @return the downloadResult
+     */
+    public Map<FileType, List<DownloadStatus>> getDownloadResult() {
+        return downloadResult;
     }
-    
-    public boolean downloadCore(){
-        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-        String prePath = "kcs";
-        String filename = "Core";
-        String url = String.format("%s/%s/%s.png", host, prePath, filename);
-        String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
-        String path = String.format("%s/%s.png", folder, filename);
-        FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
-        
-        
-        return false;
+
+    /**
+     * @return the fileResult
+     */
+    public Map<FileType, List<FileDataEntity>> getFileResult() {
+        return fileResult;
     }
-    
     
 }

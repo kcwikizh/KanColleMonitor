@@ -21,8 +21,10 @@ public class RuntimeValue {
     @Autowired
     AppConfigs appConfigs;
     
+    public String APPROOT;
     public String PRIVATEDATA_FOLDER;
     public String DOWNLOAD_FOLDER;
+    public String STORAGE_FOLDER;
     public String TEMPLATE_FOLDER;
     public String PUBLISH_FOLDER;
     public String WORKSPACE_FOLDER;
@@ -32,21 +34,24 @@ public class RuntimeValue {
     @PostConstruct
     public void initMethod() {
         WEBROOT_FOLDER = appConfigs.getFolder_webroot();
+        APPROOT = appConfigs.getSystem_user_dir();
         
         PRIVATEDATA_FOLDER =
-            String.format("%s%s", CLASSPATH, appConfigs.getFolder_privatedata());
+            String.format("%s/%s", APPROOT, appConfigs.getFolder_privatedata());
         DOWNLOAD_FOLDER =
-            String.format("%s%s", CLASSPATH, appConfigs.getFolder_download());
+            String.format("%s/%s", APPROOT, appConfigs.getFolder_download());
         TEMPLATE_FOLDER =
-            String.format("%s%s", CLASSPATH, appConfigs.getFolder_template());
+            String.format("%s/%s", APPROOT, appConfigs.getFolder_template());
+        STORAGE_FOLDER =
+            String.format("%s/%s", APPROOT, appConfigs.getFolder_storage());
     
         PUBLISH_FOLDER =
-            String.format("%s%s", WEBROOT_FOLDER, appConfigs.getFolder_publish());
+            String.format("%s/%s", WEBROOT_FOLDER, appConfigs.getFolder_publish());
         WORKSPACE_FOLDER =
-            String.format("%s%s", WEBROOT_FOLDER, appConfigs.getFolder_workspace());
+            String.format("%s/%s", WEBROOT_FOLDER, appConfigs.getFolder_workspace());
     
         FILE_SCANCORE =
-            String.format("%s%s", CLASSPATH, appConfigs.getFile_filelist());
+            String.format("%s/%s", APPROOT, appConfigs.getFile_filelist());
     }
     
 }

@@ -16,10 +16,11 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
-import kcwiki.x.kcscanner.types.PublishStatus;
-import kcwiki.x.kcscanner.types.PublishTypes;
+import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
+import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.types.MessageLevel;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -64,17 +65,18 @@ public class UploadStart2 extends BaseHttpClient {
                     try (CloseableHttpResponse response = _httpclient.execute(httpPost)) {
                         InputStream in=response.getEntity().getContent();
                         String retVal = readStream(in);
+                        WebsocketMessageType type = WebsocketMessageType.KanColleScanner_UploadStart2;
                         if(retVal.contains("data invalid")){
-                            messagePublisher.publish("上传的start2数据不合法！", PublishTypes.Admin, PublishStatus.ERROR);
+                            messagePublisher.publish("上传的start2数据不合法！", PublishTypes.Admin, type, MessageLevel.ERROR);
                         }
                         if(retVal.contains("duplicate start2 data")){
-                            messagePublisher.publish("上传的start2数据已经存在。", PublishTypes.Admin, PublishStatus.NORMAL);
+                            messagePublisher.publish("上传的start2数据已经存在。", PublishTypes.Admin, type);
                         }
                         if(retVal.contains("success")){
-                            messagePublisher.publish("start2上传成功！", PublishTypes.Admin, PublishStatus.SUCCESS);
+                            messagePublisher.publish("start2上传成功！", PublishTypes.Admin, type);
                         }
                     } catch (IOException ex) {
-                        LOG.error("");
+                        LOG.error(ExceptionUtils.getStackTrace(ex));
                         return false;
                     }
                 }

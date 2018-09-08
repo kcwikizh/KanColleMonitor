@@ -1,17 +1,26 @@
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.2.RELEASE")
-    }
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//    dependencies {
+//        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.4.RELEASE")
+//    }
+//}
+//apply plugin: 'org.springframework.boot'
+//apply plugin: 'io.spring.dependency-management'
+
+plugins {
+  id "org.springframework.boot" version "2.0.4.RELEASE"
+}
+plugins {
+  id "io.spring.dependency-management" version "1.0.6.RELEASE"
+}
+plugins {
+  id "io.freefair.lombok" version "2.6"
 }
 
-
 apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 
 //apply plugin: 'war'
 //bootWar {
@@ -41,6 +50,10 @@ repositories {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+tasks.withType(JavaCompile) {  
+    options.encoding = "UTF-8"  
+} 
 
 //http://wiki.jikexueyuan.com/project/gradle/java-quickstart.html
 //https://guides.gradle.org/building-java-web-applications/
@@ -49,16 +62,14 @@ targetCompatibility = 1.8
 
 //添加依赖
 dependencies {
-    
+        
     //Apache Utils
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
     compile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
     compile group: 'org.apache.ant', name: 'ant', version: '1.10.2'
-    // https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
     compile group: 'commons-fileupload', name: 'commons-fileupload', version: '1.3.3'
-    // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     compile group: 'com.google.guava', name: 'guava', version: '24.1-jre'
     
@@ -67,7 +78,6 @@ dependencies {
     compile group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.0-beta1'
     compile group: 'org.apache.httpcomponents.client5', name: 'httpclient5-fluent', version: '5.0-beta1'
     
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
 
     //JSON Patch
@@ -77,10 +87,8 @@ dependencies {
     compile group: 'com.flipkart.zjsonpatch', name: 'zjsonpatch', version: '0.4.3'
     
     //POJO Patch
-    // https://mvnrepository.com/artifact/org.javers/javers-core
-compile group: 'org.javers', name: 'javers-core', version: '3.9.7'
+//    compile group: 'org.javers', name: 'javers-core', version: '3.9.7'
 
-    
     //JDBC
     compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.2.3'
     compile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '1.3.2'
@@ -91,37 +99,30 @@ compile group: 'org.javers', name: 'javers-core', version: '3.9.7'
     compile group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
     
     //Spring Boot
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.0.2.RELEASE'
-//    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.0.4.RELEASE'
     
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.0.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.0.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.0.4.RELEASE'
+//    https://segmentfault.com/a/1190000014684942
+//    http://www.10tiao.com/html/556/201608/2651928402/1.html
+//    https://www.ctolib.com/topics-112589.html
+//    http://codecentric.github.io/spring-boot-admin/2.0.2/
+    compile group: 'de.codecentric', name: 'spring-boot-admin-starter-client', version: '2.0.2'
+
     
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor
-//annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.0.2.RELEASE'
+//annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.0.4.RELEASE'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat
-//compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '2.0.2.RELEASE'
+//compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '2.0.4.RELEASE'
     
     //Just for Test
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
-
-//发布 jar 包
-/*uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
-    }
-}*/
-
-tasks.withType(JavaCompile) {  
-    options.encoding = "UTF-8"  
-}  

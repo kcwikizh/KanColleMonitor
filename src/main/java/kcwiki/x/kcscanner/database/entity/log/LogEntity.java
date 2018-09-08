@@ -6,7 +6,7 @@
 package kcwiki.x.kcscanner.database.entity.log;
 
 import java.util.Date;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 
 /**
  *
@@ -14,7 +14,7 @@ import kcwiki.x.kcscanner.types.MsgTypes;
  */
 public class LogEntity {
     private Long id;
-    private MsgTypes type;
+    private MessageLevel type;
     private String signature;
     private String exception;
     private String message;
@@ -93,14 +93,14 @@ public class LogEntity {
     /**
      * @return the type
      */
-    public MsgTypes getType() {
+    public MessageLevel getType() {
         return type;
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(MsgTypes type) {
+    public void setType(MessageLevel type) {
         this.type = type;
     }
     

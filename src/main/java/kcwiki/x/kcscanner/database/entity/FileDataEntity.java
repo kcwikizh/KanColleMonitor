@@ -6,7 +6,7 @@
 package kcwiki.x.kcscanner.database.entity;
 
 import java.util.Date;
-import kcwiki.x.kcscanner.types.FileTypes;
+import kcwiki.x.kcscanner.types.FileType;
 
 /**
  *
@@ -17,7 +17,7 @@ public class FileDataEntity {
     private String filename;
     private String path;
     private Integer itemid = -1;
-    private FileTypes type;
+    private FileType type;
     private String lastmodified;
     private String hash; 
     private Date timestamp;
@@ -67,14 +67,14 @@ public class FileDataEntity {
     /**
      * @return the type
      */
-    public FileTypes getType() {
+    public FileType getType() {
         return type;
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(FileTypes type) {
+    public void setType(FileType type) {
         this.type = type;
     }
 

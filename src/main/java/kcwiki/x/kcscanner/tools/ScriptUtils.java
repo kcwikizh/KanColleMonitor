@@ -35,8 +35,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope("prototype")
-public class ScriptEngineUtils {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ScriptEngineUtils.class);
+public class ScriptUtils {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ScriptUtils.class);
     
 	private final static String ENGINE_NAME = "Nashorn";
 //        private final static String ENGINE_NAME = "JavaScript";

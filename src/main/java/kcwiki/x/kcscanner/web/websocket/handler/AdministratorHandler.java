@@ -13,12 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 /**
  *
  * @author x5171
+ * https://blog.csdn.net/Veggiel/article/details/52300093
  */
 @Component
 public class AdministratorHandler extends TextWebSocketHandler {
@@ -75,7 +77,7 @@ public class AdministratorHandler extends TextWebSocketHandler {
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-
+        LOG.debug(message.getPayload());
     }
 
      /**

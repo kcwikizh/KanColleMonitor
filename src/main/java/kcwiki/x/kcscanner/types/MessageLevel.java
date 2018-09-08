@@ -9,15 +9,18 @@ package kcwiki.x.kcscanner.types;
  *
  * @author x5171
  */
-public enum PublishStatus implements BaseEnum{
-    SUCCESS(0),
-    NORMAL(1),
-    ERROR(2)
+public enum MessageLevel implements BaseEnum {
+    UNKNOWN(0),
+    TRACE(1),
+    DEBUG(2),
+    INFO(3),
+    WARN(4),
+    ERROR(5)
     ;
     
     private int code;
     
-    PublishStatus(int code) {
+    MessageLevel(int code) {
         this.code = code;
     }
     
@@ -25,13 +28,19 @@ public enum PublishStatus implements BaseEnum{
     public String getName() {
         switch(code) {
             default:
-                return "未知";
+                return "空";
             case 0:
-                return "成功";
+                return "未知";
             case 1:
-                return "普通";
+                return "示踪";
             case 2:
-                return "错误";
+                return "调试";
+            case 3:
+                return "通知"; 
+            case 4:
+                return "警告"; 
+            case 5:
+                return "错误"; 
         }
     }
 

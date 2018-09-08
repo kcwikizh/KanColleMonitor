@@ -27,11 +27,11 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
-import kcwiki.x.kcscanner.exception.ExceptionBase;
+import kcwiki.x.kcscanner.exception.BaseException;
 import kcwiki.x.kcscanner.tools.CommontUtils;
 import static kcwiki.x.kcscanner.tools.ConstantValue.FILESEPARATOR;
 import kcwiki.x.kcscanner.types.KcServerStatus;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 import org.slf4j.LoggerFactory;
 import kcwiki.x.kcscanner.types.ServiceTypes;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +41,7 @@ public class HttpUtils {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     static final List<Integer> ErrorCode = new ArrayList<>();
 
-    public static boolean checkModified(String url, String gtmdate, CloseableHttpClient httpclient, RequestConfig config) throws ExceptionBase {
+    public static boolean checkModified(String url, String gtmdate, CloseableHttpClient httpclient, RequestConfig config) throws BaseException {
 
         HttpHead httpHead = DefaultMethod.getDefaultHeadMethod(url, config);
         try{
@@ -52,11 +52,11 @@ public class HttpUtils {
                 int rspCode = response.getCode();
                 checkResponseCode(rspCode, url);
                 if(!response.containsHeader("Last-Modified"))
-                    throw new ExceptionBase(ServiceTypes.KanColleServer, KcServerStatus.Unknown, String.format("尝试获取%s时发生错误。", url));
+                    throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.Unknown, String.format("尝试获取%s时发生错误。", url));
                 
                 Date modified = DateUtils.parseDate(response.getFirstHeader("Last-Modified").getValue()); 
                 if (modified.getTime() == 0)
-                    throw new ExceptionBase(ServiceTypes.KanColleServer, KcServerStatus.Maintenance, String.format("尝试获取%s时发生错误。", url));
+                    throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.Maintenance, String.format("尝试获取%s时发生错误。", url));
                 
                 Date lastmodified = DateUtils.parseDate(gtmdate);
                 long diffTime = modified.getTime() - lastmodified.getTime();
@@ -69,10 +69,10 @@ public class HttpUtils {
         } catch (IOException e){
             LOG.error("HttpUtils_AHC"+"checkModified时文件时发生IOException错误。");  
         }
-        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
     
-    public static boolean checkModified(String url, long timestamp) throws ExceptionBase {
+    public static boolean checkModified(String url, long timestamp) throws BaseException {
         HttpURLConnection conn = null;
         try {
             URL _url = new URL(url);
@@ -85,7 +85,7 @@ public class HttpUtils {
             conn.disconnect();
             long lastmodified = 0L;
             if (conn.getHeaderField("Last-Modified") == null || (lastmodified = conn.getLastModified()) == 0)
-                throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+                throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
                 
             long diffTime = timestamp - lastmodified;
             return rspCode == 200 && diffTime < 0;
@@ -97,10 +97,10 @@ public class HttpUtils {
             if (conn != null)
                 conn.disconnect();
         }
-        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
 
-    public static boolean downloadFile(String url, String filefolder, String filename, RequestConfig config) throws ExceptionBase {
+    public static boolean downloadFile(String url, String filefolder, String filename, RequestConfig config) throws BaseException {
         if(!url.startsWith("http://") || !url.startsWith("https://")){
             url = "http://" + url;
         }
@@ -132,17 +132,17 @@ public class HttpUtils {
             return true;
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
-            throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+            throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
         }catch(ConnectException e){
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
             ExceptionUtils.getStackTrace(e);
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
         }  
-        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
     
-    public static FileDataEntity downloadAndGetData(String url, String filefolder, String filename, RequestConfig config, CloseableHttpClient httpclient) throws ExceptionBase {
+    public static FileDataEntity downloadAndGetData(String url, String filefolder, String filename, RequestConfig config, CloseableHttpClient httpclient) throws BaseException {
         if(!url.startsWith("http")) {
             url = "http://" + url;
         }
@@ -181,13 +181,13 @@ public class HttpUtils {
                 File _file = new File(filefolder + FILESEPARATOR + filename);
                 if(_file.exists())
                     _file.delete();
-                LOG.error("{}下载失败。", url);
+                LOG.info("{}下载失败。", url);
                 return null;
             }
             return fileDataEntity;
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
-            throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+            throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
         }catch(ConnectException e){
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
@@ -206,7 +206,7 @@ public class HttpUtils {
     }
     
     
-    public static String getHttpBody (String url, RequestConfig config) throws ExceptionBase {
+    public static String getHttpBody (String url, RequestConfig config) throws BaseException {
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
@@ -223,13 +223,13 @@ public class HttpUtils {
             }
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
-            throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+            throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
         }catch(ConnectException e){
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
         }  
-        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
     
     public static FileDataEntity scanFile(String url, CloseableHttpClient httpclient, RequestConfig config, String filefolder, String filename) {
@@ -265,7 +265,7 @@ public class HttpUtils {
             return fileDataEntity;
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
-            throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+            throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
         }catch(ConnectException e){
             LOG.error("HttpUtils"+"下载文件连接超时。");
         }catch(IOException e){
@@ -281,13 +281,13 @@ public class HttpUtils {
         return null;
     }
     
-    private static void checkResponseCode(int code, String url) throws ExceptionBase {
+    private static void checkResponseCode(int code, String url) throws BaseException {
         switch(code) {
             case 403:
-                throw new ExceptionBase(ServiceTypes.KanColleServer, KcServerStatus.Maintenance, String.format("尝试获取%s时发生错误。", url));
+                throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.Maintenance, String.format("尝试获取%s时发生错误。", url));
         }
         if(ErrorCode.contains(code)){
-            throw new ExceptionBase(ServiceTypes.KanColleServer, MsgTypes.ERROR, code);
+            throw new BaseException(ServiceTypes.KanColleServer, MessageLevel.ERROR, code);
         }
     }
 

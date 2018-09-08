@@ -16,10 +16,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  *
  * @author x5171
  */
-@Configuration
+//@Configuration
 public class ThreadConfig {
     
-    @Bean(name = "threadPoolExecutor")
+//    @Bean(name = "threadPoolExecutor")
     public TaskExecutor getAsyncExecutor() {
             ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
             executor.setCorePoolSize(7);
@@ -30,7 +30,7 @@ public class ThreadConfig {
             return executor;
     }
     
-    @Bean(name = "ConcurrentTaskExecutor")
+//    @Bean(name = "ConcurrentTaskExecutor")
     public TaskExecutor taskExecutor2 () {
             return new ConcurrentTaskExecutor(
                             Executors.newFixedThreadPool(3));

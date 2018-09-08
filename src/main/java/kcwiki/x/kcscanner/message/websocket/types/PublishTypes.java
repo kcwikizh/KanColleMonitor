@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package kcwiki.x.kcscanner.types;
+package kcwiki.x.kcscanner.message.websocket.types;
+
+import kcwiki.x.kcscanner.types.BaseEnum;
 
 /**
  *

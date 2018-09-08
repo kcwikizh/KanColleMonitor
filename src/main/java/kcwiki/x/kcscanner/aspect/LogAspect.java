@@ -12,7 +12,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import kcwiki.x.kcscanner.database.service.LogService;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +75,7 @@ public class LogAspect {
     public void afterThrowing(JoinPoint joinPoint,Throwable error){
         LOG.error("[Aspect-LogActions] Method Signature:{}", joinPoint.getSignature());
         LOG.error("[Aspect-LogActions] Exception:{}", ExceptionUtils.getStackTrace(error));
-        logService.addLog(MsgTypes.ERROR, joinPoint.getSignature().toLongString(), error);
+        logService.addLog(MessageLevel.ERROR, joinPoint.getSignature().toLongString(), error);
     }
     
 //    @Around("pointCut()")

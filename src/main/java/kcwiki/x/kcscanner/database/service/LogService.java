@@ -10,9 +10,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.LogMapper;
 import kcwiki.x.kcscanner.database.entity.log.LogEntity;
-import kcwiki.x.kcscanner.exception.ExceptionBase;
+import kcwiki.x.kcscanner.exception.BaseException;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class LogService {
     @Autowired
     private LogMapper logMapper;
     
-    public boolean addLog(MsgTypes msgTypes, String msg) {
+    public boolean addLog(MessageLevel msgTypes, String msg) {
         LogEntity logEntity = new LogEntity();
         logEntity.setType(msgTypes);
         logEntity.setTimestamp(new Date());
@@ -34,13 +34,13 @@ public class LogService {
         return true;
     }
     
-    public boolean addLog(MsgTypes msgTypes, String signature, Throwable ex) {
+    public boolean addLog(MessageLevel msgTypes, String signature, Throwable ex) {
         LogEntity logEntity = new LogEntity();
         logEntity.setType(msgTypes);
         logEntity.setTimestamp(new Date());
         logEntity.setSignature(signature);
-        if(ex instanceof ExceptionBase) {
-            ExceptionBase baseException = (ExceptionBase) ex;
+        if(ex instanceof BaseException) {
+            BaseException baseException = (BaseException) ex;
             String rs = ExceptionUtils.getStackTrace(ex);
             rs = String.format("%s%s%s%s%s", 
                     baseException.getServiceType().getName(), 

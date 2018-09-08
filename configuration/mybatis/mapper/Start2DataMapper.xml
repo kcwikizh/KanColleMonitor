@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kcwiki.x.kcscanner.database.dao.Start2DataMapper">
+    <select id="selectAllStart2Data" resultType="kcwiki.x.kcscanner.database.entity.Start2DataEntity">
+        SELECT * FROM `${tablename}`
+    </select>
+    
+    <select id="selectLatestData" resultType="kcwiki.x.kcscanner.database.entity.Start2DataEntity">
+        SELECT * FROM `${tablename}` ORDER BY id DESC LIMIT 1 
+    </select>
+    
+    <insert id="insertOne" useGeneratedKeys="true" keyProperty="id">
+        INSERT into `${tablename}` 
+        (
+            data,
+            timestamp
+        )
+        VALUES
+        (
+            #{item.data}, 
+            #{item.timestamp}
+        )
+    </insert>
+    
+    <insert id="insertBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT into `${tablename}` 
+        (
+            data,
+            timestamp
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+        (
+            #{item.data}, 
+            #{item.timestamp}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="updateBatch" parameterType="java.util.List">  
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">  
+            UPDATE `${tablename}`
+            <set>
+                data = #{item.data},  
+                timestamp = #{item.timestamp}
+            </set>
+            where id = #{item.id}  
+        </foreach>  
+    </update>
+    
+</mapper>

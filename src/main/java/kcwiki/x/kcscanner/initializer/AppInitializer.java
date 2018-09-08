@@ -79,10 +79,13 @@ public class AppInitializer {
         coreInitializer.coreDataInit();
         long endTime=System.currentTimeMillis();
         LOG.info("Temp folder: {}", ConstantValue.TEMP_FOLDER);
-        LOG.info("AppRoot folder: {}", ConstantValue.APPROOT);
         LOG.info("WebRoot folder: {}", RUNTIMEValue.WEBROOT_FOLDER);
         LOG.info("CoreListFilePath folder: {}", RUNTIMEValue.FILE_SCANCORE);
+        LOG.info("AppRoot folder: {}", appConfigs.getSystem_user_dir());
         if (isInit) {
+            AppDataCache.isAppInit = true;
+            AppDataCache.isReadyReceive = true;
+            AppDataCache.isScanTaskSuspend = false;
             LOG.info("KanColle Monitor: initialization completed in {} ms{}", endTime-startTime, LINESEPARATOR);
         } else {
             LOG.error("KanColle Monitor: initialization failed in {} ms{}", endTime-startTime, LINESEPARATOR);
@@ -140,32 +143,32 @@ public class AppInitializer {
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", RUNTIMEValue.WEBROOT_FOLDER, appConfigs.getFolder_workspace());
+        filepath = RUNTIMEValue.WORKSPACE_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", RUNTIMEValue.WEBROOT_FOLDER, appConfigs.getFolder_publish());
+        filepath = RUNTIMEValue.PUBLISH_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_download());
+        filepath = RUNTIMEValue.DOWNLOAD_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_privatedata());
+        filepath = RUNTIMEValue.PRIVATEDATA_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_storage());
+        filepath = RUNTIMEValue.STORAGE_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();
         }
-        filepath = String.format("%s%s", ConstantValue.APPROOT, appConfigs.getFolder_template());
+        filepath = RUNTIMEValue.TEMPLATE_FOLDER;
         file = new File(filepath);
         if(!file.exists()){
             file.mkdirs();

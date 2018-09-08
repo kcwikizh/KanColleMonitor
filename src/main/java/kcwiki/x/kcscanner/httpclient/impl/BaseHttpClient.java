@@ -51,7 +51,7 @@ public class BaseHttpClient {
             HttpHost proxy = new HttpHost(appConfigs.getProxy_host(), appConfigs.getProxy_port());
             config = RequestConfig.custom().setProxy(proxy).setRedirectsEnabled(true).build();
         } else {
-            config = RequestConfig.custom().setRedirectsEnabled(false).build();
+            config = RequestConfig.custom().setRedirectsEnabled(true).build();
         }
     }
     

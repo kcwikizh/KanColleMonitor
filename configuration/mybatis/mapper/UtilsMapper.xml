@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kcwiki.x.kcscanner.database.dao.UtilsMapper">
+    <select id="existTable" resultType="java.lang.Integer">  
+<!--        <![CDATA[-->
+        Select COUNT(*) From information_schema.columns Where TABLE_SCHEMA = #{dbname} AND TABLE_NAME = #{tablename}
+<!--        ]]>-->
+    </select>  
+    
+    <update id="createSystemLogTable" parameterType="java.lang.String" >
+        CREATE TABLE IF NOT EXISTS `${tablename}` 
+        (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `type` ENUM('DEBUG','INFO','WARN','ERROR') NOT NULL DEFAULT 'INFO',
+            `message` TEXT NULL DEFAULT '',
+            `signature` VARCHAR(256) NULL DEFAULT '',
+            `exception` MEDIUMTEXT NULL DEFAULT '',
+            `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`)
+        )
+        COLLATE='utf8_general_ci'
+        DEFAULT CHARSET=utf8
+        ENGINE=InnoDB
+    </update>
+    
+    <update id="createDataLastmodifiedTable" parameterType="java.lang.String" >
+        CREATE TABLE IF NOT EXISTS `${tablename}` 
+        (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `path` VARCHAR(256) NOT NULL DEFAULT '0',
+            `filename` VARCHAR(50) NOT NULL DEFAULT '0',
+            `itemid` SMALLINT(6) NOT NULL DEFAULT -1,
+            `type` ENUM('Core','Ship','ShipVoice','Slotitem','Furniture','Useitem','Payitem','Mapbgm','Mapinfo','Bgm') NOT NULL DEFAULT 'Core',
+            `lastmodified` VARCHAR(50) NULL DEFAULT '0',
+            `hash` VARCHAR(50) NOT NULL DEFAULT '0',
+            `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            INDEX `path` (`path`),
+            INDEX `hash` (`hash`)
+        )
+        COLLATE='utf8_general_ci'
+        DEFAULT CHARSET=utf8
+        ENGINE=InnoDB
+    </update>
+    
+    <update id="createDataStart2Table" parameterType="java.lang.String" >
+        CREATE TABLE IF NOT EXISTS `${tablename}` 
+        (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `data` LONGTEXT NOT NULL,
+            `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`)
+        )
+        COLLATE='utf8_general_ci'
+        DEFAULT CHARSET=utf8
+        ENGINE=InnoDB
+    </update>
+    
+    <update id="createSystemScanTable" parameterType="java.lang.String" >
+        CREATE TABLE IF NOT EXISTS `${tablename}` 
+        (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(50) NOT NULL DEFAULT '0',
+            `timeline` LONGTEXT NOT NULL DEFAULT '[]',
+            `init` TINYINT(4) NOT NULL DEFAULT '0',
+            `lastmodified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            INDEX `name` (`name`)
+        )
+        COLLATE='utf8_general_ci'
+        DEFAULT CHARSET=utf8
+        ENGINE=InnoDB
+    </update>
+    
+    <update id="truncateTable" parameterType="java.lang.String" >
+        TRUNCATE TABLE `${tablename}` 
+    </update>
+</mapper>

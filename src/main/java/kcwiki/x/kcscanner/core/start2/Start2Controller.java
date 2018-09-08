@@ -7,21 +7,37 @@ package kcwiki.x.kcscanner.core.start2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import kcwiki.x.kcscanner.core.downloader.Start2Downloader;
+import kcwiki.x.kcscanner.core.downloader.entity.DownloadStatus;
+import kcwiki.x.kcscanner.core.entity.Start2PatchEntity;
+import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
+import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.database.entity.Start2DataEntity;
+import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.Start2DataService;
-import kcwiki.x.kcscanner.database.service.SystemScanService;
-import kcwiki.x.kcscanner.exception.ExceptionBase;
+import kcwiki.x.kcscanner.exception.BaseException;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.AutoLogin;
+import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
+import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.tools.SpringUtils;
+import kcwiki.x.kcscanner.types.FileType;
+import kcwiki.x.kcscanner.types.MessageLevel;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,45 +52,131 @@ public class Start2Controller {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Controller.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    private AppConfigs appConfigs;
     @Autowired
-    AutoLogin autoLogin;
+    private Start2DataService start2DataService;
     @Autowired
-    SystemScanService systemScanService;
+    private UploadStart2 uploadStart2;
     @Autowired
-    Start2DataService start2DataService;
+    FileDataService fileDataService;
     @Autowired
-    Start2Controller start2Controller;
+    private LogService logService;
     @Autowired
-    Start2Utils start2Utils;
+    private EmailService emailService;
     @Autowired
-    LogService logService;
-    @Autowired
-    EmailService emailService;
+    private MessagePublisher messagePublisher;
     
     private Start2 start2Data = null;
+    private Start2 prevStart2Data = null;
+    private Date prevStart2DataTimestamp = null;
     
     public boolean getLatestStart2Data() {
         Date date = new Date();
         String start2raw = fetchStart2OnlineData();
-        if(start2raw != null) {
-            Start2DataEntity latestData = start2DataService.getLatestData();
-            if(latestData != null) {
-                JsonNode patch = start2Utils.getPatch(latestData.getData(), start2raw);
+
+        if(StringUtils.isBlank(start2raw)) {
+            CompletableFuture.runAsync(() -> {
+                StringBuilder sb = new StringBuilder(start2raw);
+                boolean isUploaded = uploadStart2.upload(sb);
+            });
+            
+            start2Data = Start2Utils.start2pojo(start2raw);
+            AppDataCache.start2data = start2Data;
+            Start2DataEntity start2DataEntity = start2DataService.getLatestData();
+            if(start2DataEntity != null) {
+                String prevStart2 = start2DataEntity.getData();
+                prevStart2Data = Start2Utils.start2pojo(prevStart2);
+                prevStart2DataTimestamp = start2DataEntity.getTimestamp();
+                JsonNode patch = Start2Utils.getPatch(prevStart2, start2raw);
                 if(patch != null) {
-                    start2Data = start2Utils.jsonnode2start2(patch);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
             } else {
-                start2Data = start2Utils.start2pojo(start2raw);
                 insertStart2Data(start2raw, date);
                 return true;
             }
         } else {
-            emailService.sendSimpleEmail(MsgTypes.ERROR, "扫描Start2数据时失败。");
+            emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描Start2数据时失败。");
         }
         return false;
+    }
+    
+    public void downloadFile(boolean isPreDownload){
+        Start2Analyzer start2Analyzer = SpringUtils.getBean(Start2Analyzer.class);
+        Start2Downloader start2Downloader = SpringUtils.getBean(Start2Downloader.class);
+        
+        Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, prevStart2Data,  start2Data);
+        if(start2PatchEntity != null){
+            start2Downloader.download(start2PatchEntity, isPreDownload);
+            drawLog(start2Downloader);
+            drawConclusion(start2Downloader, isPreDownload);
+        }
+    }
+    
+    private void drawLog(Start2Downloader start2Downloader){
+        Map<FileType, List<DownloadStatus>> downloadResult = start2Downloader.getDownloadResult();
+//        LOG.info("downloadResult: {}", downloadResult.size());
+        
+    }
+    
+    private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload) {
+        Map<FileType, List<FileDataEntity>> fileResult = start2Downloader.getFileResult();
+//        LOG.info("fileResult: {}", fileResult.size());
+        ArrayList<FileDataEntity> insertList = new ArrayList();
+        ArrayList<FileDataEntity> updateList = new ArrayList();
+        for(FileType type:fileResult.keySet()){
+            Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(type);
+            Set<String> existHashList = new HashSet();
+            if(existDataList != null && !existDataList.isEmpty()){
+                existDataList.forEach((k, v) -> {
+                    existHashList.add(v.getHash());
+                });
+                fileResult.get(type).forEach(f -> {
+                    String path = f.getPath();
+                    String hash = f.getHash();
+                    if(existHashList.contains(hash))
+                        return;
+                    if(existDataList.containsKey(path)){
+                        if(!existDataList.get(path).getHash().equals(hash)){
+                            updateList.add(f);
+                        }
+                    } else {
+                        insertList.add(f);
+                    }
+                });
+            } else {
+                insertList.addAll(fileResult.get(type));
+            }
+            CompletableFuture.runAsync(() -> {
+                LOG.info("saveData {} {}", insertList.size(), updateList.size());
+                saveData((List<FileDataEntity>) insertList.clone(), (List<FileDataEntity>) updateList.clone());
+            });
+            if(!isPreDownload){
+                LOG.info("broadcast");
+                broadcast(insertList, updateList);
+            }
+            insertList.clear();
+            updateList.clear();
+        }
+        start2Downloader.getDownloadResult().clear();
+        start2Downloader.getFileResult().clear();
+    }
+    
+    private void saveData(List<FileDataEntity> insertList, List<FileDataEntity> updateList){
+        int rs = 0;
+        if(!insertList.isEmpty()){
+            rs = fileDataService.insertSelected(insertList);
+            LOG.debug("saveData - insertList rs: {}", rs);
+        }
+        if(!updateList.isEmpty()){
+            rs = fileDataService.updateSelected(updateList);
+            LOG.debug("saveData - updateList rs: {}", rs);
+        }
+    }
+    
+    private void broadcast(List<FileDataEntity> insertList, List<FileDataEntity> updateList) {
+        
     }
     
     private void insertStart2Data(String start2, Date date) {
@@ -85,10 +187,12 @@ public class Start2Controller {
     }
     
     public String fetchStart2OnlineData() {
-        if(appConfigs.isAllow_use_proxy())
+        AutoLogin autoLogin = SpringUtils.getBean(AutoLogin.class);
+        if(appConfigs.isAllow_use_proxy()){
             autoLogin.setConfig(true);
-        else 
+        }else{ 
             autoLogin.setConfig(false);
+        }
         autoLogin.setUser_name(appConfigs.getKcserver_account_username());
         autoLogin.setUser_pwd(appConfigs.getKcserver_account_password());
         try{
@@ -96,9 +200,9 @@ public class Start2Controller {
                 LOG.warn("获取Start2数据时失败。");
                 return null;
             }
-        } catch (IOException | ExceptionBase ex) {
-            if(ex instanceof ExceptionBase) {
-                emailService.sendSimpleEmail(MsgTypes.DEBUG, ExceptionUtils.getStackTrace(ex));
+        } catch (IOException | BaseException ex) {
+            if(ex instanceof BaseException) {
+                emailService.sendSimpleEmail(MessageLevel.DEBUG, ExceptionUtils.getStackTrace(ex));
             }
         }
         String rawStart2 = autoLogin.getBuffer().toString();
@@ -114,6 +218,20 @@ public class Start2Controller {
      */
     public Start2 getStart2Data() {
         return start2Data;
+    }
+
+    /**
+     * @return the prevStart2Data
+     */
+    public Start2 getPrevStart2Data() {
+        return prevStart2Data;
+    }
+
+    /**
+     * @return the prevStart2DataTimestamp
+     */
+    public Date getPrevStart2DataTimestamp() {
+        return prevStart2DataTimestamp;
     }
     
 }

@@ -14,8 +14,9 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.Future;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
-import kcwiki.x.kcscanner.types.PublishStatus;
-import kcwiki.x.kcscanner.types.PublishTypes;
+import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
+import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +103,7 @@ public class PhashController implements Runnable{
                                             lastest
                                     ), 
                                     PublishTypes.Admin, 
-                                    PublishStatus.NORMAL
+                                    WebsocketMessageType.KanColleScanner_UploadStart2, MessageLevel.INFO
                             );
 //                            DBCenter.imgdiff.add(newFileFolder);
                         }

@@ -24,7 +24,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import kcwiki.x.kcscanner.types.MsgTypes;
+import kcwiki.x.kcscanner.types.MessageLevel;
 
 /**
  *
@@ -43,7 +43,7 @@ public class EmailService {
     LogService logService;
    
     //https://blog.csdn.net/csdn_xuexiaoqiang/article/details/73730649
-    public void sendSimpleEmail(MsgTypes msgTypes, String text){
+    public void sendSimpleEmail(MessageLevel msgTypes, String text){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
         message.setFrom(appConfigs.getMail_sender());//发件人
         message.setTo(appConfigs.getMail_recipient());//收件人
@@ -55,7 +55,7 @@ public class EmailService {
         } catch (MailException ex) {
             String log = String.format("邮件发送失败。标题为：%s，内容为：%s。", title, text);
             LOG.error(ExceptionUtils.getStackTrace(ex));
-            logService.addLog(MsgTypes.ERROR, log);
+            logService.addLog(MessageLevel.ERROR, log);
             return;
         }
         String log = String.format("发送邮件标题为：%s，内容为：%s。", title, text);
@@ -63,7 +63,7 @@ public class EmailService {
 //        logService.addLog(msgTypes, log);
     }
     
-    public void sendSimpleEmail(MsgTypes msgTypes, Throwable ex){
+    public void sendSimpleEmail(MessageLevel msgTypes, Throwable ex){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
         message.setFrom(appConfigs.getMail_sender());//发件人
         message.setTo(appConfigs.getMail_recipient());//收件人
@@ -83,7 +83,7 @@ public class EmailService {
         } catch (MailException ex1) {
             String log = String.format("邮件发送失败。标题为：%s，内容为：%s。", title, text);
             LOG.error(ExceptionUtils.getStackTrace(ex1));
-            logService.addLog(MsgTypes.ERROR, log);
+            logService.addLog(MessageLevel.ERROR, log);
             return;
         }
         String log = String.format("发送邮件标题为：%s，内容为：%s。", title, text);
@@ -115,7 +115,7 @@ public class EmailService {
         }
     }
     
-    private String titleGenerator(MsgTypes msgTypes) {
+    private String titleGenerator(MessageLevel msgTypes) {
         return String.format("%s，类型为：%s", appConfigs.getMail_title(), msgTypes.getName());
     }
 }

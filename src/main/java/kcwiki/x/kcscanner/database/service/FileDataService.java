@@ -10,6 +10,7 @@ import java.util.Map;
 import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.FileDataMapper;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
+import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +35,8 @@ public class FileDataService {
         return fileDataMapper.selectAllFileData(TableName.getDataLastmodifiedTable());
     }
     
-    public List<FileDataEntity> getTypeData(FileDataEntity fileDataEntity) {
-        return fileDataMapper.selectTypeFileData(TableName.getDataLastmodifiedTable(), fileDataEntity);
+    public Map<String, FileDataEntity> getTypeData(FileType type) {
+        return fileDataMapper.selectTypeFileData(TableName.getDataLastmodifiedTable(), type);
     }
     
     public int insertOne(FileDataEntity fileDataEntity) {
