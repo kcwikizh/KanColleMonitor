@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -21,10 +20,12 @@ import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.UtilsMapper;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.database.service.UtilsService;
+import kcwiki.x.kcscanner.exception.BaseException;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
 import kcwiki.x.kcscanner.tools.ConstantValue;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
+import kcwiki.x.kcscanner.types.ServiceTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,8 @@ public class AppInitializer {
         try {
             String repBody = HttpUtils.getHttpBody(appConfigs.getKcwiki_api_servers(), httpClientConfig.makeProxyConfig(false));
             LOG.debug(repBody);
+            if(repBody == null)
+                throw new BaseException(ServiceTypes.KanColleScanner, "尝试从KcApi获取服务器列表时发生错误。");
             ObjectMapper objectMapper = new ObjectMapper();
             List<Map<String, Object>> servers = objectMapper.readValue(repBody,
                     new TypeReference<List<Map<String, Object>>>(){});

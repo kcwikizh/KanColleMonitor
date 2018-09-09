@@ -6,6 +6,8 @@
 package kcwiki.x.kcscanner.core.downloader;
 
 import com.google.common.collect.Lists;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -72,7 +75,7 @@ public class Start2Downloader {
     HttpClientConfig httpClientConfig;
     RequestConfig requestConfig;
     String[] bgmsuffix = {};
-    private String downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+    private String downloadFolder;
     
     Date date = new Date();
     String host;
@@ -82,6 +85,7 @@ public class Start2Downloader {
     @PostConstruct
     public void initMethod() {
         host = AppDataCache.kcHost;
+        downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
         if(StringUtils.isBlank(host))
             LOG.error("KcServer地址为空");
         if(appConfigs.isAllow_use_proxy()){
@@ -403,7 +407,7 @@ public class Start2Downloader {
                 if(type.getTypeName().contains("card_round") || type.getTypeName().contains("icon_box"))
                     continue;
                 String urlPath = "kcs2/resources/ship/" + type.getTypeName();
-                String filePath = "kcs2/resources/ship/" + item.getApi_name();
+                String filePath = "kcs2/resources/ship/" + parseString(item.getApi_name());
                 String obfsname = ShipUtils.getPath(item.getApi_id(), type.getTypeName());
                 if(obfsname == null){
                     continue;
@@ -414,13 +418,14 @@ public class Start2Downloader {
                     realname = obfsname;
                     filePath += "/others";
                 }
+//                realname = parseString(realname);
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, Integer.valueOf(item.getApi_version().get(0)));
                 String folder = String.format("%s/%s", downloadFolder, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
                 downloadStatus.setParentPath(filePath);
-                downloadStatus.setFilename(realname);
+                downloadStatus.setFilename(realname+".png");
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
                 downloadStatus.setUrl(url);
@@ -451,7 +456,7 @@ public class Start2Downloader {
         list.forEach(item -> {
             for(BaseStart2Enum type:SlotTypes.values()){
                 String urlPath = "kcs2/resources/slot/" + type.getTypeName();
-                String filePath = "kcs2/resources/slot/" + item.getApi_name();
+                String filePath = "kcs2/resources/slot/" + parseString(item.getApi_name());
                 String obfsname = SlotUtils.getPath(item.getApi_id(), type.getTypeName());
                 if(obfsname == null)
                     return;
@@ -460,13 +465,14 @@ public class Start2Downloader {
                     realname = obfsname;
                     filePath += "/others";
                 }
+//                realname = parseString(realname);
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, item.getApi_version());
                 String folder = String.format("%s/%s", downloadFolder, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
                 downloadStatus.setParentPath(filePath);
-                downloadStatus.setFilename(realname);
+                downloadStatus.setFilename(realname+".png");
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
                 downloadStatus.setUrl(url);
@@ -523,14 +529,14 @@ public class Start2Downloader {
                 prePath="kcs2/resources/furniture/movable";
                 obfsname = BaseUrl.getItemUrl("furniture", item.getApi_id(), "movable");
             }
-            
+//            obfsname = parseString(obfsname);
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, obfsname, item.getApi_version());
             String folder = String.format("%s/%s", downloadFolder, prePath);
             String path = String.format("%s/%s.png", folder, obfsname);
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".png", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setParentPath(prePath);
-            downloadStatus.setFilename(obfsname);
+            downloadStatus.setFilename(obfsname+".png");
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_title());
             downloadStatus.setUrl(url);
@@ -576,7 +582,7 @@ public class Start2Downloader {
             }
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setParentPath(prePath);
-            downloadStatus.setFilename(filename);
+            downloadStatus.setFilename(filename+".png");
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
             downloadStatus.setUrl(url);
@@ -612,7 +618,7 @@ public class Start2Downloader {
         FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
         DownloadStatus downloadStatus = new DownloadStatus();
         downloadStatus.setParentPath(prePath);
-        downloadStatus.setFilename(filename);
+        downloadStatus.setFilename(filename+".png");
         downloadStatus.setId(-1);
         downloadStatus.setName(filename);
         downloadStatus.setUrl(url);
@@ -650,7 +656,7 @@ public class Start2Downloader {
             
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setParentPath(prePath);
-            downloadStatus.setFilename(filename);
+            downloadStatus.setFilename(filename+".png");
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
             downloadStatus.setUrl(url);
@@ -749,7 +755,7 @@ public class Start2Downloader {
         int itemid = (item != null)? item.getApi_id(): -1;
         DownloadStatus downloadStatus = new DownloadStatus();
         downloadStatus.setParentPath(prePath);
-        downloadStatus.setFilename(obfsname);
+        downloadStatus.setFilename(obfsname+".mp3");
         downloadStatus.setId(itemid);
         downloadStatus.setName(obfsname);
         downloadStatus.setUrl(url);
@@ -783,7 +789,7 @@ public class Start2Downloader {
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
             downloadStatus.setParentPath(prePath);
-            downloadStatus.setFilename(obfsname);
+            downloadStatus.setFilename(obfsname+".mp3");
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
             downloadStatus.setUrl(url);
@@ -828,7 +834,7 @@ public class Start2Downloader {
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, _voiceName+".mp3", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
                 downloadStatus.setParentPath(prePath);
-                downloadStatus.setFilename(_voiceName);
+                downloadStatus.setFilename(_voiceName+".mp3");
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
                 downloadStatus.setUrl(url);
@@ -851,6 +857,17 @@ public class Start2Downloader {
         getDownloadResult().get(FileType.ShipVoice).addAll(resultlist);
         return dblist;
     } 
+    
+    private String parseString(String str){
+        return str.replace("/", "%2F").replace("\\", "%2F")
+                .replace("|", "%7C")
+                .replace(":", "%3A")
+                .replace("?", "%3F")
+                .replace("\"", "%22")
+                .replace("<", "%3C")
+                .replace(">", "%3E")
+                ;
+    }
 
     /**
      * @return the downloadResult

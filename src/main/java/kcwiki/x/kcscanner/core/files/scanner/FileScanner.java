@@ -101,7 +101,12 @@ public class FileScanner {
         String url;
         File _file;
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-        RequestConfig requestConfig = httpClientConfig.makeProxyConfig(false);
+        RequestConfig requestConfig;
+        if(appConfigs.isAllow_use_proxy()){
+            requestConfig = httpClientConfig.makeProxyConfig(true);
+        } else {
+            requestConfig = httpClientConfig.makeProxyConfig(false);
+        }
         List<FileDataEntity> result = new ArrayList<>();
         for(final String line:list) {
             if(line.startsWith("http")){
@@ -209,13 +214,22 @@ public class FileScanner {
                 serverList.forEach((k, v) -> {
                     String url = String.format("%s/%s?version=%d", v, "kcs2/version.json", version);
                     String content = HttpUtils.getHttpBody(url, requestConfig);
+                    if(content == null)
+                        return;
                     AppDataCache.worldVersionCache.put(k, content);
                 });
             } else {
                 serverList.forEach((k, v) -> {
                     String url = String.format("%s/%s?version=%d", v, "kcs2/version.json", version);
                     String content = HttpUtils.getHttpBody(url, requestConfig);
-                    boolean hasPatch = hasPatch(AppDataCache.worldVersionCache.get(k), content);
+                    String precontent = AppDataCache.worldVersionCache.get(k);
+                    if(content == null)
+                        return;
+                    if(precontent == null){
+                        AppDataCache.worldVersionCache.put(k, content);
+                        return;
+                    }
+                    boolean hasPatch = hasPatch(precontent, content);
                     if(hasPatch){
                         AppDataCache.worldVersionCache.put(k, content);
                         result.add(v);
@@ -230,6 +244,8 @@ public class FileScanner {
         try {
             scriptEngineUtils.initScriptEngine("http://203.104.209.7/gadget_html5/js/kcs_const.js", null); 
             ScriptObjectMirror obj = (ScriptObjectMirror) scriptEngineUtils.getScriptProperty("MaintenanceInfo");
+            if(obj == null)
+                return null;
             long st = (long) (double)  obj.get("StartDateTime");
             long et = (long) (double)  obj.get("EndDateTime");
             int _IsDoing = (int)  obj.get("IsDoing");
@@ -273,7 +289,7 @@ public class FileScanner {
             obj.forEach((k, v) -> {
                 String item = (String) v;
                 if(k.contains("World_"))
-                    result.put(k, (item.endsWith("/")?item.substring(0, item.length()-2):item));
+                    result.put(k, (item.endsWith("/")?item.substring(0, item.length()-1):item));
             });
         } catch (ScriptException | NoSuchMethodException | FileNotFoundException ex) {
             LOG.error(ExceptionUtils.getStackTrace(ex));

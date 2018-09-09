@@ -170,7 +170,10 @@ public class HttpUtils {
                                 file.write(buf, 0, len);
                             }
                         }
-                        fileDataEntity.setLastmodified(response.getFirstHeader("Last-Modified").getValue());
+                        if(response.containsHeader("Last-Modified"))
+                            fileDataEntity.setLastmodified(response.getFirstHeader("Last-Modified").getValue());
+                        else
+                            fileDataEntity.setLastmodified("Thu, 01 Jan 1970 00:00:00 GMT");
                     }
                 }finally {
                     if (file != null)
@@ -220,6 +223,7 @@ public class HttpUtils {
                 }
             } catch (IOException ex) {
                 LOG.error("HttpUtils访问{}时发生IOException错误。", url);  
+                LOG.error(ExceptionUtils.getStackTrace(ex));
             }
         }catch(UnknownHostException e){
             LOG.error("HttpUtils"+"下载端口出错,请检测网络连接。");
@@ -229,7 +233,7 @@ public class HttpUtils {
         }catch(IOException e){
             LOG.error("HttpUtils"+"下载文件时发生IOException错误。");  
         }  
-        throw new BaseException(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
+        return null;
     }
     
     public static FileDataEntity scanFile(String url, CloseableHttpClient httpclient, RequestConfig config, String filefolder, String filename) {

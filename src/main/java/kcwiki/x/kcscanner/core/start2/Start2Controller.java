@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
@@ -75,6 +76,18 @@ public class Start2Controller {
     private Start2 start2Data = null;
     private Start2 prevStart2Data = null;
     private Date prevStart2DataTimestamp = null;
+    private String downloadFolder;
+    private String publishFolder;
+    private String host;
+    
+    @PostConstruct
+    public void initMethod() {
+        host = appConfigs.getKcserver_host();
+        if(!host.startsWith("http"))
+            host = "http://" + host;
+        downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+        publishFolder = runtimeValue.PUBLISH_FOLDER;
+    }
     
     public boolean getLatestStart2Data() {
         Date date = new Date();
@@ -108,13 +121,18 @@ public class Start2Controller {
         return false;
     }
     
-    public void downloadFile(boolean isPreDownload){
+    private void downloadFile(Start2 source, Start2 target, boolean isPreDownload){
+        if(target == null){
+            LOG.error("target Start2 为null。");
+            return;
+        }
+        if(source == null)
+            source = new Start2();
         Start2Analyzer start2Analyzer = SpringUtils.getBean(Start2Analyzer.class);
         Start2Downloader start2Downloader = SpringUtils.getBean(Start2Downloader.class);
         
-        Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, prevStart2Data,  start2Data);
+        Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, source,  target);
         if(start2PatchEntity != null){
-            String downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
             start2Downloader.setDownloadFolder(downloadFolder);
             start2Downloader.download(start2PatchEntity, isPreDownload);
             drawConclusion(start2Downloader, isPreDownload);
@@ -122,6 +140,14 @@ public class Start2Controller {
             start2Downloader.getDownloadResult().clear();
             start2Downloader.getFileResult().clear();
         }
+    }
+    
+    public void downloadFile(Start2 source, Start2 target) {
+        downloadFile(source ,target ,false);
+    }
+    
+    public void downloadFile(boolean isPreScan){
+        downloadFile(prevStart2Data ,start2Data ,isPreScan);
     }
     
     private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload){
@@ -145,7 +171,7 @@ public class Start2Controller {
             if(!isPreDownload){
                 
             }
-            broadcast(copyFiles(appConfigs.getFolder_publish(), insertList, updateList));
+            broadcast(copyFiles(publishFolder, insertList, updateList));
         });
     }
     
@@ -196,7 +222,8 @@ public class Start2Controller {
             insertList.forEach(item -> {
                 String relativePath = String.format("%s/%s", item.getParentPath(), item.getFilename());
                 String srcfile = item.getPath();
-                String destfile = String.format("%s/start2file/new/%s", destRoot, relativePath);
+                relativePath = String.format("start2file/new/%s", relativePath);
+                String destfile = String.format("%s/%s", destRoot, relativePath);
                 try {
                     FileUtils.copyFile(new File(srcfile), new File(destfile));
                 } catch (IOException ex) {
@@ -210,7 +237,8 @@ public class Start2Controller {
             updateList.forEach(item -> {
                 String relativePath = String.format("%s/%s", item.getParentPath(), item.getFilename());
                 String srcfile = item.getPath();
-                String destfile = String.format("%s/start2file/modified/%s", destRoot, relativePath);
+                relativePath = String.format("start2file/modified/%s", relativePath);
+                String destfile = String.format("%s/%s", destRoot, relativePath);
                 try {
                     FileUtils.copyFile(new File(srcfile), new File(destfile));
                 } catch (IOException ex) {
@@ -227,7 +255,8 @@ public class Start2Controller {
     
     private void broadcast(Map<String, List<String>> fileList) {
         LOG.info("broadcast");
-        
+        messagePublisher.publish("");
+        messagePublisher.publish(123);
     }
     
     private void insertStart2Data(String start2, Date date) {

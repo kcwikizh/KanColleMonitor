@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.core.files.processor.FileAnalyzer;
 import kcwiki.x.kcscanner.core.files.scanner.FileScanner;
@@ -57,11 +58,23 @@ public class FileController {
     EmailService emailService;
     
     private boolean isStartDownload = false;
+    private String downloadFolder;
+    private String publishFolder;
+    private String host;
     
     private List<FileDataEntity> filePatchData = new ArrayList<>();
     
+    @PostConstruct
+    public void initMethod() {
+        host = appConfigs.getKcserver_host();
+        if(!host.startsWith("http"))
+            host = "http://" + host;
+        downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+        publishFolder = runtimeValue.PUBLISH_FOLDER;
+    }
+    
     public void startScan(boolean isPreScan) {
-        String tempFolder = null;
+        String tempFolder;
         if(isPreScan){
             tempFolder = String.format("%s/%s", TEMP_FOLDER, "prescan");
         } else {
@@ -69,9 +82,6 @@ public class FileController {
         }
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
-        String host = appConfigs.getKcserver_host();
-        if(!host.startsWith("http"))
-            host = "http://" + host;
         List<FileDataEntity> fileDataList = fileScanner.preScan(tempFolder, host, runtimeValue.FILE_SCANCORE);
         if(fileDataList != null && !fileDataList.isEmpty()) {
             Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
@@ -98,12 +108,10 @@ public class FileController {
                     }  
                 });
                 if(!isPreScan){
-                    broadcast(copyFiles(tempFolder, appConfigs.getFolder_publish(), insertList, updateList));
+                    broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList));
                 }
             } else {
-                CompletableFuture.runAsync(() -> {
-                    fileDataService.insertSelected(fileDataList);
-                });
+                fileDataService.insertSelected(fileDataList);
             }
         } else {
             emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描文件数据时失败。");
@@ -112,7 +120,7 @@ public class FileController {
     
     public void autoScan(){
         Map<String, String> _map = fileScanner.ScanKcsConstFile();
-        if(isStartDownload)
+        if(_map == null || isStartDownload)
             return;
         List<String> servers = fileScanner.ScanServer(_map);
         if(servers.isEmpty())
@@ -121,9 +129,7 @@ public class FileController {
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
         isStartDownload = true;
-        String host = appConfigs.getKcserver_host();
-        if(!host.startsWith("http"))
-            host = "http://" + host;
+        
         Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
         List<FileDataEntity> result = fileScanner.scan(tempFolder, host, existDataList);
         ArrayList<FileDataEntity> insertList = new ArrayList<>();
@@ -146,7 +152,7 @@ public class FileController {
                 fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
             }  
         });
-        broadcast(copyFiles(tempFolder, appConfigs.getFolder_publish(), insertList, updateList));
+        broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList));
         isStartDownload = false;
     }
     
@@ -156,9 +162,18 @@ public class FileController {
         Map<String, List<String>> result = new HashMap();
         if(!insertList.isEmpty()){
             insertList.forEach(item -> {
-                String relativePath = String.format("%s/%s", item.getPath(), item.getFilename());
+                String path = item.getPath();
+                String parentPath;
+                if(path.startsWith("http")){
+                    path = path.replace("https://", "").replace("http://", "");
+                    parentPath = path.substring(path.indexOf("/")+1, path.lastIndexOf("/"));
+                } else {
+                    parentPath = path.substring(0, path.lastIndexOf("/"));
+                }
+                String relativePath = String.format("%s/%s", parentPath, item.getFilename());
                 String srcfile = String.format("%s/%s", srcRoot, relativePath);
-                String destfile = String.format("%s/corefile/new/%s", destRoot, relativePath);
+                relativePath = String.format("corefile/new/%s", relativePath);
+                String destfile = String.format("%s/%s", destRoot, relativePath);
                 try {
                     FileUtils.copyFile(new File(srcfile), new File(destfile));
                 } catch (IOException ex) {
@@ -170,9 +185,18 @@ public class FileController {
         }
         if(!updateList.isEmpty()){
             updateList.forEach(item -> {
-                String relativePath = String.format("%s/%s", item.getPath(), item.getFilename());
+                String path = item.getPath();
+                String parentPath;
+                if(path.startsWith("http")){
+                    path = path.replace("https://", "").replace("http://", "");
+                    parentPath = path.substring(path.indexOf("/")+1, path.lastIndexOf("/"));
+                } else {
+                    parentPath = path.substring(0, path.lastIndexOf("/"));
+                }
+                String relativePath = String.format("%s/%s", parentPath, item.getFilename());
                 String srcfile = String.format("%s/%s", srcRoot, relativePath);
-                String destfile = String.format("%s/corefile/new/%s", destRoot, relativePath);
+                relativePath = String.format("corefile/modified/%s", relativePath);
+                String destfile = String.format("%s/%s", destRoot, relativePath);
                 try {
                     FileUtils.copyFile(new File(srcfile), new File(destfile));
                 } catch (IOException ex) {
