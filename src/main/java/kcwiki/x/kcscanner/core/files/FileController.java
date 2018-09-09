@@ -5,14 +5,13 @@
  */
 package kcwiki.x.kcscanner.core.files;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledFuture;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.core.files.processor.FileAnalyzer;
 import kcwiki.x.kcscanner.core.files.scanner.FileScanner;
@@ -22,14 +21,13 @@ import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
-import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
+import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -63,10 +61,18 @@ public class FileController {
     private List<FileDataEntity> filePatchData = new ArrayList<>();
     
     public void startScan(boolean isPreScan) {
+        String tempFolder = null;
+        if(isPreScan){
+            tempFolder = String.format("%s/%s", TEMP_FOLDER, "prescan");
+        } else {
+            tempFolder = String.format("%s/%s", TEMP_FOLDER, "scan");
+        }
+        if(!new File(tempFolder).exists())
+                new File(tempFolder).mkdirs();
         String host = appConfigs.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
-        List<FileDataEntity> fileDataList = fileScanner.preScan(host, runtimeValue.FILE_SCANCORE);
+        List<FileDataEntity> fileDataList = fileScanner.preScan(tempFolder, host, runtimeValue.FILE_SCANCORE);
         if(fileDataList != null && !fileDataList.isEmpty()) {
             Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
             if(!existDataList.isEmpty()){
@@ -85,17 +91,15 @@ public class FileController {
                 
                 CompletableFuture.runAsync(() -> {
                     if(!insertList.isEmpty()){
-                        fileDataService.insertSelected((List<FileDataEntity>) insertList);
+                        fileDataService.insertSelected((List<FileDataEntity>) insertList.clone());
                     }
                     if(!updateList.isEmpty()){
-                        fileDataService.updateSelected((List<FileDataEntity>) updateList);
+                        fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
                     }  
                 });
                 if(!isPreScan){
-                    LOG.info("broadcast");
-                    broadcast((List<FileDataEntity>) insertList.clone(), (List<FileDataEntity>) updateList.clone());
+                    broadcast(copyFiles(tempFolder, appConfigs.getFolder_publish(), insertList, updateList));
                 }
-                
             } else {
                 CompletableFuture.runAsync(() -> {
                     fileDataService.insertSelected(fileDataList);
@@ -113,12 +117,15 @@ public class FileController {
         List<String> servers = fileScanner.ScanServer(_map);
         if(servers.isEmpty())
             return;
+        String tempFolder = String.format("%s/%s", TEMP_FOLDER, "autoscan");
+        if(!new File(tempFolder).exists())
+                new File(tempFolder).mkdirs();
         isStartDownload = true;
         String host = appConfigs.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
         Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
-        List<FileDataEntity> result = fileScanner.scan(host, existDataList);
+        List<FileDataEntity> result = fileScanner.scan(tempFolder, host, existDataList);
         ArrayList<FileDataEntity> insertList = new ArrayList<>();
         ArrayList<FileDataEntity> updateList = new ArrayList();
         result.forEach(item -> {
@@ -133,24 +140,62 @@ public class FileController {
         });
         CompletableFuture.runAsync(() -> {
             if(!insertList.isEmpty()){
-                fileDataService.insertSelected((List<FileDataEntity>) insertList);
+                fileDataService.insertSelected((List<FileDataEntity>) insertList.clone());
             }
             if(!updateList.isEmpty()){
-                fileDataService.updateSelected((List<FileDataEntity>) updateList);
-            }   
+                fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
+            }  
         });
-        broadcast(insertList, updateList);
+        broadcast(copyFiles(tempFolder, appConfigs.getFolder_publish(), insertList, updateList));
         isStartDownload = false;
+    }
+    
+    private Map<String, List<String>> copyFiles(String srcRoot, String destRoot, List<FileDataEntity> insertList, List<FileDataEntity> updateList){
+        List<String> newfile = new ArrayList();
+        List<String> modifiedfile = new ArrayList();
+        Map<String, List<String>> result = new HashMap();
+        if(!insertList.isEmpty()){
+            insertList.forEach(item -> {
+                String relativePath = String.format("%s/%s", item.getPath(), item.getFilename());
+                String srcfile = String.format("%s/%s", srcRoot, relativePath);
+                String destfile = String.format("%s/corefile/new/%s", destRoot, relativePath);
+                try {
+                    FileUtils.copyFile(new File(srcfile), new File(destfile));
+                } catch (IOException ex) {
+                    LOG.error("尝试拷贝文件失败。 src：{}， dest：{}", srcfile, destfile);
+                    return;
+                }
+                newfile.add(relativePath);
+            });
+        }
+        if(!updateList.isEmpty()){
+            updateList.forEach(item -> {
+                String relativePath = String.format("%s/%s", item.getPath(), item.getFilename());
+                String srcfile = String.format("%s/%s", srcRoot, relativePath);
+                String destfile = String.format("%s/corefile/new/%s", destRoot, relativePath);
+                try {
+                    FileUtils.copyFile(new File(srcfile), new File(destfile));
+                } catch (IOException ex) {
+                    LOG.error("尝试拷贝文件失败。 src：{}， dest：{}", srcfile, destfile);
+                    return;
+                }
+                modifiedfile.add(relativePath);
+            });
+        }
+        result.put("New", newfile);
+        result.put("Modified", modifiedfile);
+        return result;
     }
     
     //https://www.baeldung.com/spring-scheduled-tasks
     //https://www.baeldung.com/spring-task-scheduler
     private void initTask(){
         ConcurrentTaskExecutor concurrentTaskExecutor = new ConcurrentTaskExecutor();
-
+//        concurrentTaskExecutor.execute(r);
     }
     
-    private void broadcast(List<FileDataEntity> insertList, List<FileDataEntity> updateList) {
+    private void broadcast(Map<String, List<String>> fileList) {
+        LOG.info("broadcast");
         
     }
 

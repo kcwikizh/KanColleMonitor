@@ -72,6 +72,7 @@ public class AppInitializer {
         LOG.info("KanColle Monitor: initialization started");
         isInit = true;
         long startTime=System.currentTimeMillis();
+        AppDataCache.kcHost = appConfigs.getKcserver_host();
         checkDatabase();
         getKcServers();
         createFolder();

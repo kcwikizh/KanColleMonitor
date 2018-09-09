@@ -61,9 +61,6 @@ public class CoreInitializer {
     public void coreDataInit(){
         Date date = new Date();
         SystemScanEntity systemScanEntity = AppDataCache.systemScanEntitys.get(SCANNAME_START2);
-        String host = appConfigs.getKcserver_host();
-        if(!host.startsWith("http"))
-            host = "http://" + host;
         if(systemScanEntity == null || systemScanEntity.getInit() != 1) {
             start2Controller.getLatestStart2Data();
             AppDataCache.start2data = start2Controller.getStart2Data();
@@ -106,4 +103,6 @@ public class CoreInitializer {
         _list.add(timestamp);
         return JsonUtils.object2json(_list, null);
     }
+    
+    
 }

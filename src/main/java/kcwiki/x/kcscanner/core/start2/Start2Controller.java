@@ -6,9 +6,11 @@
 package kcwiki.x.kcscanner.core.start2;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.core.downloader.Start2Downloader;
 import kcwiki.x.kcscanner.core.downloader.entity.DownloadStatus;
 import kcwiki.x.kcscanner.core.entity.Start2PatchEntity;
@@ -37,6 +40,7 @@ import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.tools.SpringUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +57,8 @@ public class Start2Controller {
     
     @Autowired
     private AppConfigs appConfigs;
+    @Autowired
+    RuntimeValue runtimeValue;
     @Autowired
     private Start2DataService start2DataService;
     @Autowired
@@ -74,7 +80,7 @@ public class Start2Controller {
         Date date = new Date();
         String start2raw = fetchStart2OnlineData();
 
-        if(StringUtils.isBlank(start2raw)) {
+        if(!StringUtils.isBlank(start2raw)) {
             CompletableFuture.runAsync(() -> {
                 StringBuilder sb = new StringBuilder(start2raw);
                 boolean isUploaded = uploadStart2.upload(sb);
@@ -108,19 +114,42 @@ public class Start2Controller {
         
         Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, prevStart2Data,  start2Data);
         if(start2PatchEntity != null){
+            String downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+            start2Downloader.setDownloadFolder(downloadFolder);
             start2Downloader.download(start2PatchEntity, isPreDownload);
-            drawLog(start2Downloader);
             drawConclusion(start2Downloader, isPreDownload);
+            saveData(start2Downloader, isPreDownload);
+            start2Downloader.getDownloadResult().clear();
+            start2Downloader.getFileResult().clear();
         }
     }
     
-    private void drawLog(Start2Downloader start2Downloader){
+    private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload){
         Map<FileType, List<DownloadStatus>> downloadResult = start2Downloader.getDownloadResult();
+        Map<FileType, List<FileDataEntity>> fileResult = start2Downloader.getFileResult();
 //        LOG.info("downloadResult: {}", downloadResult.size());
-        
+        downloadResult.forEach((k, v) -> {
+            List<DownloadStatus> insertList = new ArrayList();
+            List<DownloadStatus> updateList = new ArrayList();
+            v.forEach(item -> {
+                if(!item.isIsSuccess())
+                    return;
+                if(item.isIsNew()){
+                    insertList.add(item);
+                } else {
+                    updateList.add(item);
+                }
+            });
+            int sumCount = fileResult.get(k).size();
+            int successCount = v.size();
+            if(!isPreDownload){
+                
+            }
+            broadcast(copyFiles(appConfigs.getFolder_publish(), insertList, updateList));
+        });
     }
     
-    private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload) {
+    private void saveData(Start2Downloader start2Downloader, boolean isPreDownload) {
         Map<FileType, List<FileDataEntity>> fileResult = start2Downloader.getFileResult();
 //        LOG.info("fileResult: {}", fileResult.size());
         ArrayList<FileDataEntity> insertList = new ArrayList();
@@ -148,34 +177,56 @@ public class Start2Controller {
             } else {
                 insertList.addAll(fileResult.get(type));
             }
-            CompletableFuture.runAsync(() -> {
-                LOG.info("saveData {} {}", insertList.size(), updateList.size());
-                saveData((List<FileDataEntity>) insertList.clone(), (List<FileDataEntity>) updateList.clone());
-            });
-            if(!isPreDownload){
-                LOG.info("broadcast");
-                broadcast(insertList, updateList);
+            if(!insertList.isEmpty()){
+                fileDataService.insertSelected(insertList);
+                insertList.clear();
             }
-            insertList.clear();
-            updateList.clear();
+            if(!updateList.isEmpty()){
+                fileDataService.updateSelected(updateList);
+                updateList.clear();
+            }
         }
-        start2Downloader.getDownloadResult().clear();
-        start2Downloader.getFileResult().clear();
     }
     
-    private void saveData(List<FileDataEntity> insertList, List<FileDataEntity> updateList){
-        int rs = 0;
+    private Map<String, List<String>> copyFiles(String destRoot, List<DownloadStatus> insertList, List<DownloadStatus> updateList){
+        List<String> newfile = new ArrayList();
+        List<String> modifiedfile = new ArrayList();
+        Map<String, List<String>> result = new HashMap();
         if(!insertList.isEmpty()){
-            rs = fileDataService.insertSelected(insertList);
-            LOG.debug("saveData - insertList rs: {}", rs);
+            insertList.forEach(item -> {
+                String relativePath = String.format("%s/%s", item.getParentPath(), item.getFilename());
+                String srcfile = item.getPath();
+                String destfile = String.format("%s/start2file/new/%s", destRoot, relativePath);
+                try {
+                    FileUtils.copyFile(new File(srcfile), new File(destfile));
+                } catch (IOException ex) {
+                    LOG.error("尝试拷贝文件失败。 src：{}， dest：{}", srcfile, destfile);
+                    return;
+                }
+                newfile.add(relativePath);
+            });
         }
         if(!updateList.isEmpty()){
-            rs = fileDataService.updateSelected(updateList);
-            LOG.debug("saveData - updateList rs: {}", rs);
+            updateList.forEach(item -> {
+                String relativePath = String.format("%s/%s", item.getParentPath(), item.getFilename());
+                String srcfile = item.getPath();
+                String destfile = String.format("%s/start2file/modified/%s", destRoot, relativePath);
+                try {
+                    FileUtils.copyFile(new File(srcfile), new File(destfile));
+                } catch (IOException ex) {
+                    LOG.error("尝试拷贝文件失败。 src：{}， dest：{}", srcfile, destfile);
+                    return;
+                }
+                modifiedfile.add(relativePath);
+            });
         }
+        result.put("New", newfile);
+        result.put("Modified", modifiedfile);
+        return result;
     }
     
-    private void broadcast(List<FileDataEntity> insertList, List<FileDataEntity> updateList) {
+    private void broadcast(Map<String, List<String>> fileList) {
+        LOG.info("broadcast");
         
     }
     

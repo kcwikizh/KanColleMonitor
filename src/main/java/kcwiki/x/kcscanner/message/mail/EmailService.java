@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
@@ -36,13 +35,12 @@ public class EmailService {
     private static final Logger LOG = LoggerFactory.getLogger(EmailService.class);
     
     @Autowired
-    AppConfigs appConfigs;
-    @Autowired
     public JavaMailSender emailSender;
     @Autowired
-    LogService logService;
+    private AppConfigs appConfigs;
+    @Autowired
+    private LogService logService;
    
-    //https://blog.csdn.net/csdn_xuexiaoqiang/article/details/73730649
     public void sendSimpleEmail(MessageLevel msgTypes, String text){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
         message.setFrom(appConfigs.getMail_sender());//发件人

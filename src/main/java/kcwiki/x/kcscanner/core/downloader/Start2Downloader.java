@@ -72,6 +72,7 @@ public class Start2Downloader {
     HttpClientConfig httpClientConfig;
     RequestConfig requestConfig;
     String[] bgmsuffix = {};
+    private String downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
     
     Date date = new Date();
     String host;
@@ -80,7 +81,7 @@ public class Start2Downloader {
     
     @PostConstruct
     public void initMethod() {
-        host = appConfigs.getKcserver_host();
+        host = AppDataCache.kcHost;
         if(StringUtils.isBlank(host))
             LOG.error("KcServer地址为空");
         if(appConfigs.isAllow_use_proxy()){
@@ -414,10 +415,11 @@ public class Start2Downloader {
                     filePath += "/others";
                 }
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, Integer.valueOf(item.getApi_version().get(0)));
-                String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, filePath);
+                String folder = String.format("%s/%s", downloadFolder, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
+                downloadStatus.setParentPath(filePath);
                 downloadStatus.setFilename(realname);
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
@@ -459,10 +461,11 @@ public class Start2Downloader {
                     filePath += "/others";
                 }
                 String url = String.format("%s/%s/%s.png?version=%s", host, urlPath, obfsname, item.getApi_version());
-                String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, filePath);
+                String folder = String.format("%s/%s", downloadFolder, filePath);
                 String path = String.format("%s/%s.png", folder, realname);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, realname+".png", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
+                downloadStatus.setParentPath(filePath);
                 downloadStatus.setFilename(realname);
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
@@ -522,10 +525,11 @@ public class Start2Downloader {
             }
             
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, obfsname, item.getApi_version());
-            String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+            String folder = String.format("%s/%s", downloadFolder, prePath);
             String path = String.format("%s/%s.png", folder, obfsname);
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".png", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
+            downloadStatus.setParentPath(prePath);
             downloadStatus.setFilename(obfsname);
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_title());
@@ -560,17 +564,18 @@ public class Start2Downloader {
                 return;
             String filename = String.format("%03d", item.getApi_id());
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
-            String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+            String folder = String.format("%s/%s", downloadFolder, prePath);
             String path = String.format("%s/%s.png", folder, filename);
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             if(fileDataEntity == null) {
                 prePath = "kcs2/resources/useitem/card";
                 url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
-                folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+                folder = String.format("%s/%s", downloadFolder, prePath);
                 path = String.format("%s/%s.png", folder, filename);
                 fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             }
             DownloadStatus downloadStatus = new DownloadStatus();
+            downloadStatus.setParentPath(prePath);
             downloadStatus.setFilename(filename);
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
@@ -602,10 +607,11 @@ public class Start2Downloader {
         int version = (int) (Math.random()*90 + 10);
         String filename = "item_payitemicon";
         String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
-        String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+        String folder = String.format("%s/%s", downloadFolder, prePath);
         String path = String.format("%s/%s.png", folder, filename);
         FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
         DownloadStatus downloadStatus = new DownloadStatus();
+        downloadStatus.setParentPath(prePath);
         downloadStatus.setFilename(filename);
         downloadStatus.setId(-1);
         downloadStatus.setName(filename);
@@ -636,13 +642,14 @@ public class Start2Downloader {
             String prePath = "kcs2/resources/map/" + String.format("%03d", item.getApi_maparea_id());
             String filename = String.format("%02d_image", item.getApi_no());
             String url = String.format("%s/%s/%s.png?version=%s", host, prePath, filename, version);
-            String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+            String folder = String.format("%s/%s", downloadFolder, prePath);
             String path = String.format("%s/%s.png", folder, filename);
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename+".png", requestConfig, closeableHttpClient);
             
             Api_mst_mapbgm api_mst_mapbgm = hashmap.get(item.getApi_id());
             
             DownloadStatus downloadStatus = new DownloadStatus();
+            downloadStatus.setParentPath(prePath);
             downloadStatus.setFilename(filename);
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
@@ -736,11 +743,12 @@ public class Start2Downloader {
     private FileDataEntity getMapbgmFileDataEntity(Api_mst_mapbgm item, String prePath, int id, int version, boolean isNew, CloseableHttpClient closeableHttpClient){
         String obfsname = BaseUrl.getItemUrl("bgm", id, "battle");
         String url = String.format("%s/%s/%s.mp3?version=%s", host, prePath, obfsname, version);
-        String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+        String folder = String.format("%s/%s", downloadFolder, prePath);
         String path = String.format("%s/%s.mp3", folder, obfsname);
         FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig, closeableHttpClient);
         int itemid = (item != null)? item.getApi_id(): -1;
         DownloadStatus downloadStatus = new DownloadStatus();
+        downloadStatus.setParentPath(prePath);
         downloadStatus.setFilename(obfsname);
         downloadStatus.setId(itemid);
         downloadStatus.setName(obfsname);
@@ -770,10 +778,11 @@ public class Start2Downloader {
         list.forEach(item -> {
             String obfsname = BaseUrl.getItemUrl("bgm", item.getApi_id(), "port");
             String url = String.format("%s/%s/%s.mp3?version=%s", host, prePath, obfsname, version);
-            String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+            String folder = String.format("%s/%s", downloadFolder, prePath);
             String path = String.format("%s/%s.mp3", folder, obfsname);
             FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, obfsname+".mp3", requestConfig, closeableHttpClient);
             DownloadStatus downloadStatus = new DownloadStatus();
+            downloadStatus.setParentPath(prePath);
             downloadStatus.setFilename(obfsname);
             downloadStatus.setId(item.getApi_id());
             downloadStatus.setName(item.getApi_name());
@@ -814,10 +823,11 @@ public class Start2Downloader {
             }
             memberList.forEach(_voiceName -> {
                 String url = String.format("%s/%s/%s.mp3", host, prePath, _voiceName);
-                String folder = String.format("%s/%s", runtimeValue.DOWNLOAD_FOLDER, prePath);
+                String folder = String.format("%s/%s", downloadFolder, prePath);
                 String path = String.format("%s/%s.mp3", folder, _voiceName);
                 FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, _voiceName+".mp3", requestConfig, closeableHttpClient);
                 DownloadStatus downloadStatus = new DownloadStatus();
+                downloadStatus.setParentPath(prePath);
                 downloadStatus.setFilename(_voiceName);
                 downloadStatus.setId(item.getApi_id());
                 downloadStatus.setName(item.getApi_name());
@@ -854,6 +864,20 @@ public class Start2Downloader {
      */
     public Map<FileType, List<FileDataEntity>> getFileResult() {
         return fileResult;
+    }
+
+    /**
+     * @return the downloadFolder
+     */
+    public String getDownloadFolder() {
+        return downloadFolder;
+    }
+
+    /**
+     * @param downloadFolder the downloadFolder to set
+     */
+    public void setDownloadFolder(String downloadFolder) {
+        this.downloadFolder = downloadFolder;
     }
     
 }

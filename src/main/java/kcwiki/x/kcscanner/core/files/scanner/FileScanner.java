@@ -13,10 +13,7 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,8 +25,6 @@ import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.script.ScriptException;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -38,18 +33,14 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
-import static kcwiki.x.kcscanner.core.start2.processor.Start2Utils.start2pojo;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
-import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.tools.CommontUtils;
-import static kcwiki.x.kcscanner.tools.ConstantValue.FILESEPARATOR;
 import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
-import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.tools.ScriptUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.io.FileUtils;
@@ -78,7 +69,7 @@ public class FileScanner {
     @Autowired
     MessagePublisher messagePublisher;
     
-    public List<FileDataEntity> preScan(String host, String listfile) {
+    public List<FileDataEntity> preScan(String tempFolder, String host, String listfile) {
         List<String> downloadList = new ArrayList<>();
         List<FileDataEntity> result = new ArrayList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(16);
@@ -90,14 +81,6 @@ public class FileScanner {
             LOG.error("preScan - 读取{}文件时失败。", listfile);
             LOG.error(ExceptionUtils.getStackTrace(ex));
         }
-        String tempFolder = String.format("%s/%s", TEMP_FOLDER, "prescan");
-        if(!new File(tempFolder).exists())
-                new File(tempFolder).mkdirs();
-//        String url;
-//        File _file;
-//        String host = appConfigs.getKcserver_host();
-//        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-//        RequestConfig requestConfig = httpClientConfig.makeProxyConfig(false);
         Date date = new Date();
         List<List<String>> _list = Lists.partition(downloadList, 10);
             CompletableFuture[] cfs  = _list.stream()
@@ -111,31 +94,6 @@ public class FileScanner {
             CompletableFuture.allOf(cfs).join();
             cfs = null;
         }
-//        for(String line:lines) {
-//            String prePath = line.substring(0, line.lastIndexOf("/"));
-//            if(line.startsWith("http")){
-//                url = line;
-//                line = line.replace("http://", "");
-//                prePath = line.substring(line.indexOf("/")+1, line.lastIndexOf("/"));
-//            }else
-//                url = String.format("http://%s/%s", host, line);
-//            _file = new File(url);
-//            
-//            String filename = _file.getName();
-//            String folder = String.format("%s/%s", tempFolder, prePath);
-//            String path = String.format("%s/%s.png", folder, filename);
-////            FileDataEntity fileDataEntity = HttpUtils.scanFile(url, closeableHttpClient, requestConfig, _file.getParent(), _file.getName());
-//            FileDataEntity fileDataEntity = HttpUtils.downloadAndGetData(url, folder, filename, requestConfig, closeableHttpClient);
-//            if(fileDataEntity == null)
-//                continue;
-//            fileDataEntity.setItemid(-1);
-//            fileDataEntity.setFilename(filename);
-//            fileDataEntity.setHash(CommontUtils.getFileHex(path));
-//            fileDataEntity.setPath(line);
-//            fileDataEntity.setTimestamp(date);
-//            fileDataEntity.setType(FileTypes.Core);
-//            result.add(fileDataEntity);
-//        }
         return result;
     }
     
@@ -199,7 +157,7 @@ public class FileScanner {
         return downloadList;
     }
     
-    public List<FileDataEntity> scan(String host, Map<String, FileDataEntity> existDataList){
+    public List<FileDataEntity> scan(String tempFolder, String host, Map<String, FileDataEntity> existDataList){
         List<String> preresult = new ArrayList<>();
         List<FileDataEntity> result = new ArrayList();
         ExecutorService executorService = Executors.newFixedThreadPool(16);
@@ -222,9 +180,6 @@ public class FileScanner {
         if(preresult.isEmpty())
             return result;
         
-        String tempFolder = String.format("%s/%s", TEMP_FOLDER, "autoscan");
-        if(!new File(tempFolder).exists())
-                new File(tempFolder).mkdirs();
         Date date = new Date();
         List<List<String>> _list = Lists.partition(preresult, 10);
         cfs  = _list.stream()

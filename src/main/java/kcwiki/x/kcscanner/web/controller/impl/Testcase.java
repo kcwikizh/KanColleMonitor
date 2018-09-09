@@ -6,6 +6,7 @@
 package kcwiki.x.kcscanner.web.controller.impl;
 
 import java.util.Date;
+import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.types.BaseHttpStatus;
 import kcwiki.x.kcscanner.types.MessageLevel;
@@ -26,7 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class Testcase extends BaseController {
     
     @Autowired
-    MessagePublisher messagePublisher;       
+    MessagePublisher messagePublisher;   
+    @Autowired
+    EmailService emailService;
+    
+    @RequestMapping("/sendmail")
+    public String sendMail(){
+        emailService.sendSimpleEmail(MessageLevel.DEBUG, "测试邮件");
+        return "SUCCESS";
+    }
     
     
     @RequestMapping("/wstest")

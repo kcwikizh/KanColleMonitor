@@ -15,67 +15,67 @@ import org.springframework.context.annotation.PropertySource;
  * http://www.baeldung.com/properties-with-spring#java
  */
 @Configuration
-@PropertySource(value={"file:${user.dir}/configuration/appconfig/appconfig.properties"})
+//@PropertySource(value={"file:${user.dir}/configuration/appconfig/appconfig.properties"})
 public class AppConfigs {
     
     
     @Value("${user.dir}")
     private String system_user_dir;     
-    @Value("${global.useproxy}")
+    @Value("${myprops.global.useproxy}")
     private boolean allow_use_proxy;
-    @Value("${global.proxyhost}")
+    @Value("${myprops.global.proxyhost}")
     private String proxy_host;
-    @Value("${global.proxyport}")
+    @Value("${myprops.global.proxyport}")
     private int proxy_port;
-    @Value("${global.debug}")
+    @Value("${myprops.global.debug}")
     private boolean debug;
-    @Value("${global.folder.webroot}")
+    @Value("${myprops.global.folder.webroot}")
     private String folder_webroot;
-    @Value("${global.folder.privatedata}")
+    @Value("${myprops.global.folder.privatedata}")
     private String folder_privatedata;
-    @Value("${global.folder.download}")
+    @Value("${myprops.global.folder.download}")
     private String folder_download;
-    @Value("${global.folder.storage}")
+    @Value("${myprops.global.folder.storage}")
     private String folder_storage;
-    @Value("${global.folder.template}")
+    @Value("${myprops.global.folder.template}")
     private String folder_template;
-    @Value("${global.folder.publish}")
+    @Value("${myprops.global.folder.publish}")
     private String folder_publish;
-    @Value("${global.folder.workspace}")
+    @Value("${myprops.global.folder.workspace}")
     private String folder_workspace;
-    @Value("${global.file.filelist}")
+    @Value("${myprops.global.file.filelist}")
     private String file_filelist;
-    @Value("${application.superuser.username}")
+    @Value("${myprops.application.superuser.username}")
     private String application_superuser_username;
-    @Value("${application.superuser.password}")
+    @Value("${myprops.application.superuser.password}")
     private String application_superuser_password;
-    @Value("${kcwiki.api.servers}")
+    @Value("${myprops.kcwiki.api.servers}")
     private String kcwiki_api_servers;
-    @Value("${kcwiki.api.upload.start2.url}")
+    @Value("${myprops.kcwiki.api.upload.start2.url}")
     private String kcwiki_api_upload_start2_url;
-    @Value("${kcwiki.api.upload.start2.token}")
+    @Value("${myprops.kcwiki.api.upload.start2.token}")
     private String kcwiki_api_upload_start2_token;
-    @Value("${mail.serverhost}")
-    private String mail_server_host;
-    @Value("${mail.serverport}")
-    private int mail_server_port;
-    @Value("${mail.username}")
-    private String mail_server_username;
-    @Value("${mail.password}")
-    private String mail_server_password;
-    @Value("${mail.from}")
+//    @Value("${myprops.mail.serverhost}")
+//    private String mail_server_host;
+//    @Value("${myprops.mail.serverport}")
+//    private int mail_server_port;
+//    @Value("${myprops.mail.username}")
+//    private String mail_server_username;
+//    @Value("${myprops.mail.password}")
+//    private String mail_server_password;
+    @Value("${myprops.mail.from}")
     private String mail_sender;
-    @Value("${mail.to}")
+    @Value("${myprops.mail.to}")
     private String[] mail_recipient;
-    @Value("${mail.title}")
+    @Value("${myprops.mail.title}")
     private String mail_title;
-    @Value("${message.notice}")
+    @Value("${myprops.message.notice}")
     private String message_notice;
-    @Value("${kcserver.host}")
+    @Value("${myprops.kcserver.host}")
     private String kcserver_host;
-    @Value("${kcserver.account.username}")
+    @Value("${myprops.kcserver.account.username}")
     private String kcserver_account_username;
-    @Value("${kcserver.account.password}")
+    @Value("${myprops.kcserver.account.password}")
     private String kcserver_account_password;
     @Value("${myprops.database.name}")
     private String myprops_database_name;
@@ -108,63 +108,7 @@ public class AppConfigs {
     public void setProxy_port(int proxy_port) {
         this.proxy_port = proxy_port;
     }
-
-    /**
-     * @return the mail_server_host
-     */
-    public String getMail_server_host() {
-        return mail_server_host;
-    }
-
-    /**
-     * @param mail_server_host the mail_server_host to set
-     */
-    public void setMail_server_host(String mail_server_host) {
-        this.mail_server_host = mail_server_host;
-    }
-
-    /**
-     * @return the mail_server_port
-     */
-    public int getMail_server_port() {
-        return mail_server_port;
-    }
-
-    /**
-     * @param mail_server_port the mail_server_port to set
-     */
-    public void setMail_server_port(int mail_server_port) {
-        this.mail_server_port = mail_server_port;
-    }
-
-    /**
-     * @return the mail_server_username
-     */
-    public String getMail_server_username() {
-        return mail_server_username;
-    }
-
-    /**
-     * @param mail_server_username the mail_server_username to set
-     */
-    public void setMail_server_username(String mail_server_username) {
-        this.mail_server_username = mail_server_username;
-    }
-
-    /**
-     * @return the mail_server_password
-     */
-    public String getMail_server_password() {
-        return mail_server_password;
-    }
-
-    /**
-     * @param mail_server_password the mail_server_password to set
-     */
-    public void setMail_server_password(String mail_server_password) {
-        this.mail_server_password = mail_server_password;
-    }
-
+    
     /**
      * @return the mail_sender
      */

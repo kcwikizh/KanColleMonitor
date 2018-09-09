@@ -18,6 +18,7 @@ public class DownloadStatus {
     private String hash;
     private int id;
     private String name;
+    private String parentPath;
 
     /**
      * @return the url
@@ -129,6 +130,20 @@ public class DownloadStatus {
      */
     public void setIsNew(boolean isNew) {
         this.isNew = isNew;
+    }
+
+    /**
+     * @return the parentPath
+     */
+    public String getParentPath() {
+        return parentPath;
+    }
+
+    /**
+     * @param parentPath the parentPath to set
+     */
+    public void setParentPath(String parentPath) {
+        this.parentPath = parentPath;
     }
     
 }

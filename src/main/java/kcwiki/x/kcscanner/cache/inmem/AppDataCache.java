@@ -24,6 +24,8 @@ public class AppDataCache {
     public static boolean isReadyReceive = false;
     public static boolean isScanTaskSuspend = true;
     
+    public static String kcHost = null;
+    
     public static Start2 start2data = null;
     public static boolean isDownloadShipVoice = false;
     
