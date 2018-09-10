@@ -22,6 +22,9 @@ import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
+import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
+import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
+import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
@@ -56,6 +59,8 @@ public class FileController {
     LogService logService;
     @Autowired
     EmailService emailService;
+    @Autowired
+    private MessagePublisher messagePublisher;
     
     private boolean isStartDownload = false;
     private String downloadFolder;
@@ -108,7 +113,7 @@ public class FileController {
                     }  
                 });
                 if(!isPreScan){
-                    broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList));
+                    broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
                 }
             } else {
                 fileDataService.insertSelected(fileDataList);
@@ -152,7 +157,7 @@ public class FileController {
                 fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
             }  
         });
-        broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList));
+        broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
         isStartDownload = false;
     }
     
@@ -182,6 +187,7 @@ public class FileController {
                 }
                 newfile.add(relativePath);
             });
+            result.put("New", newfile);
         }
         if(!updateList.isEmpty()){
             updateList.forEach(item -> {
@@ -205,9 +211,8 @@ public class FileController {
                 }
                 modifiedfile.add(relativePath);
             });
+            result.put("Modified", modifiedfile);
         }
-        result.put("New", newfile);
-        result.put("Modified", modifiedfile);
         return result;
     }
     
@@ -218,9 +223,20 @@ public class FileController {
 //        concurrentTaskExecutor.execute(r);
     }
     
-    private void broadcast(Map<String, List<String>> fileList) {
+    private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
         LOG.info("broadcast");
-        
+        if(fileList.containsKey("New")){
+            DownLoadResult downLoadResult = new DownLoadResult();
+            downLoadResult.setType(fileType);
+            downLoadResult.setFilelist(fileList.get("New"));
+            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        }
+        if(fileList.containsKey("Modified")){
+            DownLoadResult downLoadResult = new DownLoadResult();
+            downLoadResult.setType(fileType);
+            downLoadResult.setFilelist(fileList.get("Modified"));
+            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        }
     }
 
     /**

@@ -12,7 +12,7 @@ import kcwiki.x.kcscanner.types.MessageLevel;
  *
  * @author x5171
  */
-public class WebsocketMessageDataEntity<T> {
+public class WebsocketMessageData<T> {
 
     private WebsocketMessageType type;
     private MessageLevel level;

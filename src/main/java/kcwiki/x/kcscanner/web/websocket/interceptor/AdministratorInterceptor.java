@@ -7,14 +7,16 @@ package kcwiki.x.kcscanner.web.websocket.interceptor;
 
 import java.util.Map;
 import javax.servlet.http.HttpSession;
+import kcwiki.x.kcscanner.web.websocket.handler.AdministratorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.server.HandshakeFailureException;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 /**
@@ -25,40 +27,24 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
  */
 @Component
 public class AdministratorInterceptor implements HandshakeInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(AdministratorInterceptor.class);
-    
-    private static final String SESSION_USER = "user";
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AdministratorInterceptor.class);
 
-    @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, 
-            WebSocketHandler wsHandler, Map<String, Object> attributes) throws HandshakeFailureException {
-        return true;
-//        if (request instanceof ServletServerHttpRequest) {
-//            ServletServerHttpRequest serverHttpRequest = (ServletServerHttpRequest) request;
-//            HttpSession session = serverHttpRequest.getServletRequest().getSession();
-//            LOG.info("用户建立连接。。。");
-//            LOG.error("{}", attributes);
-//            if(attributes == null){
-//                return false;
-//            }
-//                
-//            if (request instanceof ServletServerHttpRequest) {
-//                String userId = ((ServletServerHttpRequest) request).getServletRequest().getParameter("userId");
-//                attributes.put("userId", userId);
-//                LOG.info("用户唯一标识:" + userId);
-//            }
-//            if (session != null) {
-//                LOG.info("{} - {}", session.getId(), session.getAttribute(SESSION_USER));
-//                attributes.put(SESSION_USER, session.getAttribute(SESSION_USER));
-//                return true;
-//            }
-//        }
-//        return false;
-    }
+	@Override
+	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+			Map attributes) throws Exception {
+		if (request instanceof ServletServerHttpRequest) {
+			ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
+			HttpSession session = servletRequest.getServletRequest().getSession();
+			attributes.put("sessionId", session.getId());
+                        LOG.info("{}", ((ServletServerHttpRequest) request).getHeaders());
+                        response.setStatusCode(HttpStatus.FORBIDDEN);
+		}
+                LOG.info("AdministratorInterceptor");
+		return true;
+	}
 
-    @Override
-    public void afterHandshake(ServerHttpRequest request,
-            ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
-
-    }
+        @Override
+	public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+			Exception ex) {
+	}
 }

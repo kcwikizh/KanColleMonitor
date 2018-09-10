@@ -5,7 +5,7 @@
  */
 package kcwiki.x.kcscanner.message.websocket;
 
-import kcwiki.x.kcscanner.message.websocket.entity.WebsocketMessageDataEntity;
+import kcwiki.x.kcscanner.message.websocket.entity.WebsocketMessageData;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
@@ -67,7 +67,7 @@ public class MessagePublisher<T> {
     }
     
     private <T> String fullMsgGen(T payload, WebsocketMessageType websocketMessageTypes, MessageLevel messageLevel) {
-        WebsocketMessageDataEntity websocketMessageDataEntity = new WebsocketMessageDataEntity();
+        WebsocketMessageData websocketMessageDataEntity = new WebsocketMessageData();
         websocketMessageDataEntity.setType(websocketMessageTypes);
         websocketMessageDataEntity.setPayload(payload);
         websocketMessageDataEntity.setLevel(messageLevel);

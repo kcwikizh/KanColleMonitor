@@ -16,7 +16,9 @@ public enum WebsocketMessageType {
     KanColleScanner_Core_FilesProcessor("文件处理"),
     KanColleScanner_Start2_Download("Start2 文件下载"),
     KanColleScanner_Manual_FileScan("手动文件扫描"),
-    KanColleScanner_Auto_FileScan("自动文件扫描")
+    KanColleScanner_Auto_FileScan("自动文件扫描"),
+    KanColleScanner_Download_Result("下载文件列表"),
+    KanColleScanner_Download_Log("下载文件记录")
     ;
     
     private String msg;

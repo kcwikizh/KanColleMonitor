@@ -37,6 +37,9 @@ import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
+import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
+import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
+import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.tools.SpringUtils;
 import kcwiki.x.kcscanner.types.FileType;
@@ -168,10 +171,8 @@ public class Start2Controller {
             });
             int sumCount = fileResult.get(k).size();
             int successCount = v.size();
-            if(!isPreDownload){
-                
-            }
-            broadcast(copyFiles(publishFolder, insertList, updateList));
+            messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
+            broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
     }
     
@@ -232,6 +233,7 @@ public class Start2Controller {
                 }
                 newfile.add(relativePath);
             });
+            result.put("New", newfile);
         }
         if(!updateList.isEmpty()){
             updateList.forEach(item -> {
@@ -247,16 +249,25 @@ public class Start2Controller {
                 }
                 modifiedfile.add(relativePath);
             });
+            result.put("Modified", modifiedfile);
         }
-        result.put("New", newfile);
-        result.put("Modified", modifiedfile);
         return result;
     }
     
-    private void broadcast(Map<String, List<String>> fileList) {
+    private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
         LOG.info("broadcast");
-        messagePublisher.publish("");
-        messagePublisher.publish(123);
+        if(fileList.containsKey("New")){
+            DownLoadResult downLoadResult = new DownLoadResult();
+            downLoadResult.setType(fileType);
+            downLoadResult.setFilelist(fileList.get("New"));
+            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        }
+        if(fileList.containsKey("Modified")){
+            DownLoadResult downLoadResult = new DownLoadResult();
+            downLoadResult.setType(fileType);
+            downLoadResult.setFilelist(fileList.get("Modified"));
+            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        }
     }
     
     private void insertStart2Data(String start2, Date date) {
