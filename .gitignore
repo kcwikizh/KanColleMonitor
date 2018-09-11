@@ -1,34 +1,5 @@
-.gradle
-/build/
-!gradle/wrapper/gradle-wrapper.jar
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-/out/
-
-### NetBeans ###
-/nbproject/private/
-/build/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### Custom ###
-/src/main/java/kcwiki/x/kcscanner/httpclient/impl/
+build
+*.xml
 *.properties
-logs/
-resources/
-test/
+src\main\java\org\kcwiki\monitor\start2\GetStart2.java
+
