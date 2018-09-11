@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kcwiki.x.kcscanner.database.dao.LogMapper">
+    <insert id="addLogMsg" useGeneratedKeys="true" keyProperty="id">
+        INSERT into `${tablename}` 
+        (
+            type,
+            signature,
+            exception,
+            message,
+            timestamp
+        )
+        VALUES
+        (
+            #{item.type},
+            #{item.signature},
+            #{item.exception},
+            #{item.message},
+            #{item.timestamp}
+        )
+    </insert>
+    
+    <insert id="addHistoryData" useGeneratedKeys="true" keyProperty="id">
+        INSERT into `${tablename}` 
+        (
+            worldnum,
+            data,
+            timestamp
+        )
+        VALUES
+        (
+            #{item.worldnum},
+            #{item.data},
+            #{item.timestamp}
+        )
+    </insert>
+</mapper>
