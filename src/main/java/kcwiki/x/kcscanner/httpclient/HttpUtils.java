@@ -2,6 +2,7 @@
 package kcwiki.x.kcscanner.httpclient;
 
 import com.google.common.io.CharStreams;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -215,11 +217,11 @@ public class HttpUtils {
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                 if (300 >= response.getCode()) {
                     HttpEntity entity = response.getEntity();
-                    String text ;
-                    try (final Reader reader = new InputStreamReader(entity.getContent())) {
-                        text = CharStreams.toString(reader);
+                    String content;
+                    try (final Reader reader = new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8)) {
+                        content = CharStreams.toString(reader);
                     }
-                    return text;
+                    return content;
                 }
             } catch (IOException ex) {
                 LOG.error("HttpUtils访问{}时发生IOException错误。", url);  

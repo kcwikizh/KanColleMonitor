@@ -8,6 +8,7 @@ package kcwiki.x.kcscanner.core.files;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
+import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
@@ -118,6 +120,9 @@ public class FileController {
             } else {
                 fileDataService.insertSelected(fileDataList);
             }
+            long date = (new Date()).getTime();
+            ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Manual-"+date+".zip");
+            messagePublisher.publish("核心文件下载完成（Manual） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         } else {
             emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描文件数据时失败。");
         }
@@ -134,7 +139,7 @@ public class FileController {
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
         isStartDownload = true;
-        
+//        FileUtils.deleteDirectory(new File(tempFolder));
         Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
         List<FileDataEntity> result = fileScanner.scan(tempFolder, host, existDataList);
         ArrayList<FileDataEntity> insertList = new ArrayList<>();
@@ -158,6 +163,9 @@ public class FileController {
             }  
         });
         broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
+        long date = (new Date()).getTime();
+        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Auto-"+date+".zip");
+        messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         isStartDownload = false;
     }
     

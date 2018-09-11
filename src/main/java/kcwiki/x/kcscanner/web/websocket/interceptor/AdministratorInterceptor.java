@@ -7,7 +7,6 @@ package kcwiki.x.kcscanner.web.websocket.interceptor;
 
 import java.util.Map;
 import javax.servlet.http.HttpSession;
-import kcwiki.x.kcscanner.web.websocket.handler.AdministratorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,6 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
@@ -37,7 +35,7 @@ public class AdministratorInterceptor implements HandshakeInterceptor {
 			HttpSession session = servletRequest.getServletRequest().getSession();
 			attributes.put("sessionId", session.getId());
                         LOG.info("{}", ((ServletServerHttpRequest) request).getHeaders());
-                        response.setStatusCode(HttpStatus.FORBIDDEN);
+//                        response.setStatusCode(HttpStatus.FORBIDDEN);
 		}
                 LOG.info("AdministratorInterceptor");
 		return true;

@@ -38,10 +38,10 @@ import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
-import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.tools.SpringUtils;
+import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
@@ -145,6 +145,11 @@ public class Start2Controller {
         }
     }
     
+    /**
+     * 
+     * @param source 旧用于对比的Start2文件
+     * @param target 最新用于下载资源的Start2文件
+     */
     public void downloadFile(Start2 source, Start2 target) {
         downloadFile(source ,target ,false);
     }
@@ -174,6 +179,8 @@ public class Start2Controller {
             messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
             broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
+        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, downloadFolder, "editorialfile.zip");
+        messagePublisher.publish("start2文件下载完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
     }
     
     private void saveData(Start2Downloader start2Downloader, boolean isPreDownload) {
