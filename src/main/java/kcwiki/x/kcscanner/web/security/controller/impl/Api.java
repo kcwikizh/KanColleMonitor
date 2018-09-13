@@ -5,9 +5,11 @@
  */
 package kcwiki.x.kcscanner.web.security.controller.impl;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.core.files.FileController;
 import kcwiki.x.kcscanner.core.start2.Start2Controller;
@@ -15,12 +17,14 @@ import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
-import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
+import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
+import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.tools.JsonUtils;
+import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +53,59 @@ public class Api {
     Start2Analyzer start2Analyzer;
     @Autowired
     UploadStart2 uploadStart2;
+    @Autowired
+    private MessagePublisher messagePublisher;
+    
+    ScheduledExecutorService executor = null;  
+    
     
     @RequestMapping("/test")
     public String apitest(@RequestParam(value="name", defaultValue="World") String name) {
         return "Hello "+name;
+    }
+    
+    @RequestMapping("/pushimgs")
+    public String pushimgs(@RequestParam(value="name", defaultValue="World") String name) {
+        List<String> list = new ArrayList();
+        list.add("start2file/new/kcs2/resources/map/042/01_image.png");
+        list.add("start2file/new/kcs2/resources/ship/集積地棲姫 バカンスmode-壊/KanMusu1814HDIllust.png");
+        list.add("start2file/new/kcs2/resources/ship/神鷹改二/KanMusu536HDDmg.png");
+        list.add("start2file/new/kcs2/resources/slot/九七式艦攻(九三一空2F熟練)/Soubi302HD.png");
+        DownLoadResult downLoadResult = new DownLoadResult();
+        downLoadResult.setType(FileType.Mapinfo);
+        downLoadResult.setFilelist(list);
+        messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        return "SUCCESS";
+    }
+    
+    @RequestMapping("/pushinfo")
+    public String pushinfo(@RequestParam(value="name", defaultValue="World") String name) {
+        messagePublisher.publish("系统消息测试", WebsocketMessageType.KanColleScanner_System_Info);
+        return "SUCCESS";
+    }
+    
+    @RequestMapping("/startmonitor")
+    public String startmonitor() {
+        executor = Executors.newScheduledThreadPool(3); 
+        messagePublisher.publish("start monitoring...");
+        executor.scheduleAtFixedRate(  
+               new Runnable() {
+                    @Override
+                    public void run() {
+                        fileController.autoScan();
+                    }
+                },  
+               1,  
+               3,  
+               TimeUnit.MINUTES);  
+        return "SUCCESS";
+    }
+    
+    @RequestMapping("/stopmonitor")
+    public String stopmonitor() {
+        executor.shutdownNow();
+        messagePublisher.publish("stop monitor...");
+        return "SUCCESS";
     }
     
     @RequestMapping("/diffstart2")

@@ -174,12 +174,12 @@ public class Start2Controller {
                     updateList.add(item);
                 }
             });
-            int sumCount = fileResult.get(k).size();
-            int successCount = v.size();
+            int successCount = fileResult.get(k).size();
+            int sumCount = v.size();
             messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
             broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
-        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, downloadFolder, "editorialfile.zip");
+        ZipCompressorUtils.createZip(downloadFolder, runtimeValue.WORKSPACE_FOLDER, "editorialfile.zip");
         messagePublisher.publish("start2文件下载完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
     }
     

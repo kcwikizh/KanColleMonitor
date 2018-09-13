@@ -103,7 +103,7 @@ public class HttpUtils {
     }
 
     public static boolean downloadFile(String url, String filefolder, String filename, RequestConfig config) throws BaseException {
-        if(!url.startsWith("http://") || !url.startsWith("https://")){
+        if(!url.startsWith("http")){
             url = "http://" + url;
         }
         
@@ -209,7 +209,6 @@ public class HttpUtils {
         return null;
 //        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
-    
     
     public static String getHttpBody (String url, RequestConfig config) throws BaseException {
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);

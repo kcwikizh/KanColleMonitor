@@ -121,7 +121,7 @@ public class FileController {
                 fileDataService.insertSelected(fileDataList);
             }
             long date = (new Date()).getTime();
-            ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Manual-"+date+".zip");
+            ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Manual-"+date+".zip");
             messagePublisher.publish("核心文件下载完成（Manual） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         } else {
             emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描文件数据时失败。");
@@ -164,7 +164,7 @@ public class FileController {
         });
         broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
         long date = (new Date()).getTime();
-        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Auto-"+date+".zip");
+        ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Auto-"+date+".zip");
         messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         isStartDownload = false;
     }
@@ -180,6 +180,7 @@ public class FileController {
                 if(path.startsWith("http")){
                     path = path.replace("https://", "").replace("http://", "");
                     parentPath = path.substring(path.indexOf("/")+1, path.lastIndexOf("/"));
+                    
                 } else {
                     parentPath = path.substring(0, path.lastIndexOf("/"));
                 }

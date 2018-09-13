@@ -6,8 +6,6 @@
 package kcwiki.x.kcscanner.core.downloader;
 
 import com.google.common.collect.Lists;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -124,6 +121,9 @@ public class Start2Downloader {
         if(!start2PatchEntity.getModifiedShip().isEmpty()){
             if(!downloadResult.containsKey(FileType.Ship)){
                 getDownloadResult().put(FileType.Ship, new ArrayList());
+            }
+            if(!fileResult.containsKey(FileType.Ship)){
+                getFileResult().put(FileType.Ship, new ArrayList());
             }
             List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 5);
             CompletableFuture[] cfs = _list.stream()
@@ -368,11 +368,11 @@ public class Start2Downloader {
             }
             if(!asyncResults.isEmpty()){
                 if(!asyncResults.isEmpty()){
-                asyncResults.forEach(future -> {
-                    CompletableFuture.allOf(future).join();
-                });
-                asyncResults.clear();
-            }
+                    asyncResults.forEach(future -> {
+                        CompletableFuture.allOf(future).join();
+                    });
+                    asyncResults.clear();
+                }
             }
         }
     }
@@ -413,7 +413,7 @@ public class Start2Downloader {
                     continue;
                 }
 //                String realname = ShipUtils.getWikiFileName(String.format("%03d", item.getApi_sortno()), type.getTypeName());
-                String realname = ShipUtils.getWikiFileName(String.valueOf(item.getApi_id()), type.getTypeName());
+                String realname = ShipUtils.getWikiFileName(item.getApi_id(), type.getTypeName());
                 if(realname == null) {
                     realname = obfsname;
                     filePath += "/others";
@@ -608,7 +608,6 @@ public class Start2Downloader {
     private List<FileDataEntity> downloadPayitem(List<Api_mst_payitem> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
-        List<DownloadStatus> resultlist = new ArrayList<>();
         String prePath = "kcs2/img/item";
         int version = (int) (Math.random()*90 + 10);
         String filename = "item_payitemicon";
@@ -859,13 +858,21 @@ public class Start2Downloader {
     } 
     
     private String parseString(String str){
-        return str.replace("/", "%2F").replace("\\", "%2F")
-                .replace("|", "%7C")
-                .replace(":", "%3A")
-                .replace("?", "%3F")
-                .replace("\"", "%22")
-                .replace("<", "%3C")
-                .replace(">", "%3E")
+        LOG.info("parseString: {}", str);
+        return str.replaceAll("/", "2F").replaceAll("\\\\", "2F")
+                .replaceAll("\\|", "7C")
+                .replaceAll(":", "3A")
+                .replaceAll("\\?", "3F")
+                .replaceAll("\"", "22")
+                .replaceAll("<", "3C")
+                .replaceAll(">", "3E")
+                .replaceAll("\\+", "2B")
+//                .replaceAll("-", "")
+//                .replaceAll("_", "")
+                .replaceAll("&", "26")
+                .replaceAll("#", "23")
+//                .replaceAll("!", "")
+                .replaceAll("'", "27")
                 ;
     }
 

@@ -29,7 +29,7 @@ public class ZipCompressorUtils {
      * @param sourcePath 文件或文件夹路径 
      * @param zipPath 生成的zip文件存在路径（包括文件名） 
      */  
-    public static void createZip(String sourcePath, String destFolder,String zipName) {  
+    public static void createZip(String sourcePath, String destFolder, String zipName) {  
         FileOutputStream fos = null;  
         ZipOutputStream zos = null;  
         if(!new File(destFolder).exists()){
