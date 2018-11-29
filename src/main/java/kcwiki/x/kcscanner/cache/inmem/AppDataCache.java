@@ -34,6 +34,7 @@ public class AppDataCache {
     public static final Map<String, String> stringCache = new ConcurrentHashMap<>();
     public static final Map<String, String> worldVersionCache = new ConcurrentHashMap<>();
     public static final Map<String, String> maintenanceInfo = new ConcurrentHashMap<>();
+    public static final Map<String, String> dataHashCache = new ConcurrentHashMap<>();
     
     public static final Set<String> existTables = new HashSet<>();
     

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +41,6 @@ import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.tools.CommontUtils;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.tools.ScriptUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.io.FileUtils;
@@ -64,8 +64,6 @@ public class FileScanner {
     RuntimeValue runtimeValue;
     @Autowired
     HttpClientConfig httpClientConfig;
-    @Autowired
-    ScriptUtils scriptEngineUtils;
     @Autowired
     MessagePublisher messagePublisher;
     
@@ -111,6 +109,8 @@ public class FileScanner {
         for(final String line:list) {
             if(line.startsWith("http")){
                 url = line;
+            } else if(line.contains("203.104.209.7")){
+                url = "http://" + line;
             } else {
                 url = String.format("%s/%s", host, line);
             }
@@ -151,6 +151,8 @@ public class FileScanner {
             final String path = item.getPath();
             if(path.startsWith("http")){
                 url = path;
+            } else if(path.contains("203.104.209.7")){
+                url = "http://" + path;
             } else {
                 url = String.format("%s/%s", host, path);
             }
@@ -211,6 +213,7 @@ public class FileScanner {
         }
         int version = (int) (Math.random()*90 + 10);
             if(AppDataCache.worldVersionCache.isEmpty()){
+                LOG.info("ScanServer Init.");
                 serverList.forEach((k, v) -> {
                     String url = String.format("%s/%s?version=%d", v, "kcs2/version.json", version);
                     String content = HttpUtils.getHttpBody(url, requestConfig);
@@ -219,6 +222,7 @@ public class FileScanner {
                     AppDataCache.worldVersionCache.put(k, content);
                 });
             } else {
+                LOG.info("ScanServer ReScan.");
                 serverList.forEach((k, v) -> {
                     String url = String.format("%s/%s?version=%d", v, "kcs2/version.json", version);
                     String content = HttpUtils.getHttpBody(url, requestConfig);
@@ -241,9 +245,11 @@ public class FileScanner {
     
     public Map<String, String> ScanKcsConstFile(){
         Map<String, String> result = new HashMap();
+        ScriptUtils scriptUtils = new ScriptUtils();
         try {
-            scriptEngineUtils.initScriptEngine("http://203.104.209.7/gadget_html5/js/kcs_const.js", null); 
-            ScriptObjectMirror obj = (ScriptObjectMirror) scriptEngineUtils.getScriptProperty("MaintenanceInfo");
+            if(!scriptUtils.initScriptEngine("http://203.104.209.7/gadget_html5/js/kcs_const.js?version=" + UUID.randomUUID(), null))
+                return null;
+            ScriptObjectMirror obj = (ScriptObjectMirror) scriptUtils.getScriptProperty("MaintenanceInfo");
             if(obj == null)
                 return null;
             long st = (long) (double)  obj.get("StartDateTime");
@@ -252,13 +258,8 @@ public class FileScanner {
             int _IsEmergency = (int)  obj.get("IsEmergency");
             long duration = et - st;
             
-            Locale exampleLocale = Locale.GERMANY;
-            TimeZone zone = TimeZone.getTimeZone("UTC");
-
-            Calendar theCalendar = Calendar.getInstance(zone, exampleLocale);
-            theCalendar.setTime(new Date(duration));
-
-            String MD = String.format("预计维护时间为：%d天 %d小时 %d分钟", theCalendar.get(Calendar.DAY_OF_MONTH)-1, theCalendar.get(Calendar.HOUR_OF_DAY), theCalendar.get(Calendar.MINUTE));
+            
+            boolean isInfoChange = false;
             
             if(AppDataCache.maintenanceInfo.isEmpty()){
                 AppDataCache.maintenanceInfo.put("StartDateTime", String.valueOf(st));
@@ -267,31 +268,50 @@ public class FileScanner {
                 AppDataCache.maintenanceInfo.put("IsEmergency", String.valueOf(_IsEmergency));
             } else {
                 StringBuilder sb = new StringBuilder();
+                sb.append("注意：时间均为日本时间(GMT+:09:00)\r\n");
                 if(!AppDataCache.maintenanceInfo.get("StartDateTime").equals(String.valueOf(st))){
+                    AppDataCache.maintenanceInfo.put("StartDateTime", String.valueOf(st));
                     sb.append("开始维护时间为： ").append(date2string(st));
+                    sb.append("\r\n");
+                    isInfoChange = true;
                 }
                 if(!AppDataCache.maintenanceInfo.get("EndDateTime").equals(String.valueOf(et))){
+                    AppDataCache.maintenanceInfo.put("EndDateTime", String.valueOf(et));
                     sb.append("结束维护时间为： ").append(date2string(et));
+                    sb.append("\r\n");
+                    isInfoChange = true;
                 }
                 if(!AppDataCache.maintenanceInfo.get("IsDoing").equals(String.valueOf(_IsDoing))){
+                    AppDataCache.maintenanceInfo.put("IsDoing", String.valueOf(_IsDoing));
                     sb.append("目前状态为： ").append((_IsDoing == 1? "维护中":"维护完毕"));
+                    sb.append("\r\n");
+                    isInfoChange = true;
                 }
 //                if(!AppDataCache.maintenanceInfo.get("IsEmergency").equals(String.valueOf(_IsEmergency))){
-//                    sb.append("是否紧急维护： ").append((_IsEmergency == 1? "是":"否"));
+//                    AppDataCache.maintenanceInfo.put("IsEmergency", String.valueOf(_IsEmergency));
+//                    sb.append("服务器是否紧急维护： ").append((_IsEmergency == 1? "是":"否"));
+//                    sb.append("\r\n");
+//                    isInfoChange = true;
 //                }
-                String msg = sb.toString();
-                if(!StringUtils.isBlank(msg))
-                    messagePublisher.publish(msg, WebsocketMessageType.KanColleScanner_Auto_FileScan);
+                if(isInfoChange) {
+                    Calendar theCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.GERMANY);
+                    theCalendar.setTime(new Date(duration));
+                    String MD = String.format("预计维护时间为：%d天 %d小时 %d分钟", theCalendar.get(Calendar.DAY_OF_MONTH)-1, theCalendar.get(Calendar.HOUR_OF_DAY), theCalendar.get(Calendar.MINUTE));
+
+                    messagePublisher.publish(sb.toString(), WebsocketMessageType.KanColleScanner_Auto_FileScan);
+                }
             }
             
             
-            obj = (ScriptObjectMirror) scriptEngineUtils.getScriptProperty("ConstServerInfo");
+            obj = (ScriptObjectMirror) scriptUtils.getScriptProperty("ConstServerInfo");
             obj.forEach((k, v) -> {
                 String item = (String) v;
-                if(k.contains("World_"))
-                    result.put(k, (item.endsWith("/")?item.substring(0, item.length()-1):item));
+                if(k.contains("World_")){
+                    String server = (item.endsWith("/")?item.substring(0, item.length()-1):item);
+                    result.put(k, server);
+                }
             });
-        } catch (ScriptException | NoSuchMethodException | FileNotFoundException ex) {
+        } catch (FileNotFoundException | NoSuchMethodException | ScriptException ex) {
             LOG.error(ExceptionUtils.getStackTrace(ex));
         }
         return result;
@@ -311,11 +331,10 @@ public class FileScanner {
     }
     
     private String date2string(long duration){
-        Locale exampleLocale = Locale.JAPAN;
-        TimeZone zone = TimeZone.getTimeZone("JST");
-        Calendar theCalendar = Calendar.getInstance(zone, exampleLocale);
+//        Calendar theCalendar = Calendar.getInstance(TimeZone.getTimeZone("PRC"), Locale.CHINA);
+        Calendar theCalendar = Calendar.getInstance();
         theCalendar.setTime(new Date(duration));
-        return theCalendar.get(Calendar.MONTH)+"月" 
+        return (theCalendar.get(Calendar.MONTH)+1)+"月" 
                 + theCalendar.get(Calendar.DAY_OF_MONTH)+"日" 
                 + theCalendar.get(Calendar.HOUR_OF_DAY) + "时"
                 + theCalendar.get(Calendar.MINUTE) + "分";

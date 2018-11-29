@@ -124,15 +124,24 @@ public class Start2Controller {
         return false;
     }
     
-    private void downloadFile(Start2 source, Start2 target, boolean isPreDownload){
+    /**
+     * 
+     * @param source 旧的Start2数据
+     * @param target 新的Start2数据
+     * @param isPreDownload
+     * @param isSeasonal 
+     */
+    private void downloadFile(Start2 source, Start2 target, boolean isPreDownload, boolean isSeasonal, Map<Integer, String> kcdata){
         if(target == null){
-            LOG.error("target Start2 为null。");
+            LOG.error("target Start2 can not be null。");
             return;
         }
         if(source == null)
             source = new Start2();
         Start2Analyzer start2Analyzer = SpringUtils.getBean(Start2Analyzer.class);
         Start2Downloader start2Downloader = SpringUtils.getBean(Start2Downloader.class);
+        start2Downloader.setSeasonal(isSeasonal);
+        start2Downloader.setGameid2wikiid(kcdata);
         
         Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, source,  target);
         if(start2PatchEntity != null){
@@ -149,13 +158,19 @@ public class Start2Controller {
      * 
      * @param source 旧用于对比的Start2文件
      * @param target 最新用于下载资源的Start2文件
+     * @param isSeasonal
+     * @param kcdata
      */
-    public void downloadFile(Start2 source, Start2 target) {
-        downloadFile(source ,target ,false);
+    public void downloadFile(Start2 source, Start2 target, boolean isSeasonal, Map<Integer, String> kcdata) {
+        downloadFile(source ,target, false, isSeasonal, kcdata);
     }
     
-    public void downloadFile(boolean isPreScan){
-        downloadFile(prevStart2Data ,start2Data ,isPreScan);
+    public void downloadFile(boolean isPreScan, boolean isSeasonal){
+        downloadFile(prevStart2Data, start2Data, isPreScan, isSeasonal, null);
+    }
+    
+    public void downloadFile(boolean isSeasonal){
+        downloadFile(Start2Utils.start2pojo(start2DataService.getLatestData().getData()) , start2Data, false, isSeasonal, null);
     }
     
     private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload){

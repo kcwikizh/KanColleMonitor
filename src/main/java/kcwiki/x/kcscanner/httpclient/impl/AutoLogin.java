@@ -268,17 +268,23 @@ public class AutoLogin extends BaseHttpClient {
                 LOG.debug("Code:{}, Phrase:{}", response.getCode(), response.getReasonPhrase());
                 InputStream in=response.getEntity().getContent();
                 String retVal = readStream(in);
-                        p=Pattern.compile("地域からご利用");
+                        p=Pattern.compile("正しくありません");
                         m=p.matcher(retVal);
                         if(m.find()){
-                            messagePublisher.publish("非日本IP登陆", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
-                            throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "非日本IP登陆");
+                            messagePublisher.publish("账号：" + user_name + "\t密码错误", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                            throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "账号：" + user_name + "\t密码错误");
                         }
                         p=Pattern.compile("認証エラー");
                         m=p.matcher(retVal);
                         if(m.find()){
                             messagePublisher.publish("DMM强制要求修改密码", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
                             throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "DMM强制要求修改密码");
+                        }
+                        p=Pattern.compile("地域からご利用");
+                        m=p.matcher(retVal);
+                        if(m.find()){
+                            messagePublisher.publish("非日本IP登陆", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                            throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "非日本IP登陆");
                         }
                         cookies = cookieStore.getCookies();
             }

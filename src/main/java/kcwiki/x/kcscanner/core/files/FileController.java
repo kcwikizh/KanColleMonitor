@@ -31,6 +31,7 @@ import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,12 +137,14 @@ public class FileController {
         if(servers.isEmpty())
             return;
         String tempFolder = String.format("%s/%s", TEMP_FOLDER, "autoscan");
+        LOG.info("autoScan - tempFolder: " + tempFolder);
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
         isStartDownload = true;
 //        FileUtils.deleteDirectory(new File(tempFolder));
         Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
         List<FileDataEntity> result = fileScanner.scan(tempFolder, host, existDataList);
+        
         ArrayList<FileDataEntity> insertList = new ArrayList<>();
         ArrayList<FileDataEntity> updateList = new ArrayList();
         result.forEach(item -> {
@@ -161,8 +164,13 @@ public class FileController {
             if(!updateList.isEmpty()){
                 fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
             }  
+            LOG.info("autoScan - saveFile done." );
         });
-        broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
+        try{
+            broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
+        }catch(Exception ex){
+            LOG.error(ExceptionUtils.getStackTrace(ex));
+        }
         long date = (new Date()).getTime();
         ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Auto-"+date+".zip");
         messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
@@ -180,7 +188,6 @@ public class FileController {
                 if(path.startsWith("http")){
                     path = path.replace("https://", "").replace("http://", "");
                     parentPath = path.substring(path.indexOf("/")+1, path.lastIndexOf("/"));
-                    
                 } else {
                     parentPath = path.substring(0, path.lastIndexOf("/"));
                 }
@@ -228,7 +235,7 @@ public class FileController {
     //https://www.baeldung.com/spring-scheduled-tasks
     //https://www.baeldung.com/spring-task-scheduler
     private void initTask(){
-        ConcurrentTaskExecutor concurrentTaskExecutor = new ConcurrentTaskExecutor();
+//        ConcurrentTaskExecutor concurrentTaskExecutor = new ConcurrentTaskExecutor();
 //        concurrentTaskExecutor.execute(r);
     }
     

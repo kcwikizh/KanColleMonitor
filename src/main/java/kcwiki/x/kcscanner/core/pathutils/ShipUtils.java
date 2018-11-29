@@ -5,6 +5,7 @@
  */
 package kcwiki.x.kcscanner.core.pathutils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -54,10 +55,9 @@ public class ShipUtils extends BaseUrl {
         return null;
     }
     
-    public static String getWikiFileName(int shipID, String picType) {
+    public static String getWikiFileName(int shipID, String wikiID, String picType) {
         if(shipID > 1500)
             return getWikiShinkaiFileName(shipID, picType);
-        String wikiID = String.valueOf(shipID);
         String wikiType;
         switch(picType){
             case "card":
@@ -82,7 +82,11 @@ public class ShipUtils extends BaseUrl {
                 return null;
         }
         try{
-            return String.format(wikiType, wikiID);
+            if(StringUtils.isBlank(wikiID)){
+                return String.format(wikiType, String.valueOf(shipID));
+            } else {
+                return String.format(wikiType, wikiID);
+            }
         } catch (Exception ex) {
             ExceptionUtils.getStackTrace(ex);
         }

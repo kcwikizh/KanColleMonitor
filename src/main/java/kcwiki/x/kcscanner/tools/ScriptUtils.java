@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Map;
 import javax.script.Bindings;
@@ -33,8 +35,8 @@ import org.springframework.stereotype.Component;
  *
  * @author x5171
  */
-@Component
-@Scope("prototype")
+//@Component
+//@Scope("prototype")
 public class ScriptUtils {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ScriptUtils.class);
     
@@ -42,13 +44,13 @@ public class ScriptUtils {
 //        private final static String ENGINE_NAME = "JavaScript";
         private ScriptEngine engine;
         
-        public void initScriptEngine(Object scriptObject, Map<String, Object> factors) throws ScriptException, FileNotFoundException{
+        public boolean initScriptEngine(Object scriptObject, Map<String, Object> factors) throws ScriptException, FileNotFoundException{
             //1.创建脚本引擎
             engine = createScriptEngine();
             //2.绑定全局变量
             bindingContextVariable(engine, factors);
             //3.读取脚本内容
-            readScriptIntoEngine(engine, scriptObject);
+            return readScriptIntoEngine(engine, scriptObject);
         }
  
 	public Object runScriptFunction(String functionName, Object... args) throws ScriptException, NoSuchMethodException{
@@ -89,6 +91,7 @@ public class ScriptUtils {
                 String scriptPath = (String) scriptObject;
                 HttpURLConnection conn = null;
                 if(scriptPath.startsWith("http")){
+//                    Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080));
                     try { 
                         conn = (HttpURLConnection) new URL(scriptPath).openConnection();
                         conn.setConnectTimeout(3*1000); 

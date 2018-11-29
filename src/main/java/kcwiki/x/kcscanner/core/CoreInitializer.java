@@ -64,7 +64,7 @@ public class CoreInitializer {
         if(systemScanEntity == null || systemScanEntity.getInit() != 1) {
             start2Controller.getLatestStart2Data();
             AppDataCache.start2data = start2Controller.getStart2Data();
-            start2Controller.downloadFile(true);
+            start2Controller.downloadFile(true, false);
             
             systemScanEntity = new SystemScanEntity();
             systemScanEntity.setInit(1);

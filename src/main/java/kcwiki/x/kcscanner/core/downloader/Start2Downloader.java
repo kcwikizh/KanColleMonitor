@@ -73,6 +73,8 @@ public class Start2Downloader {
     RequestConfig requestConfig;
     String[] bgmsuffix = {};
     private String downloadFolder;
+    private boolean seasonal = false;
+    private Map<Integer, String> gameid2wikiid = null;
     
     Date date = new Date();
     String host;
@@ -412,8 +414,15 @@ public class Start2Downloader {
                 if(obfsname == null){
                     continue;
                 }
+                if(seasonal && (type == ShipTypes.Full || type == ShipTypes.FullDmg))
+                    obfsname = obfsname + "_" + item.getApi_filename();
 //                String realname = ShipUtils.getWikiFileName(String.format("%03d", item.getApi_sortno()), type.getTypeName());
-                String realname = ShipUtils.getWikiFileName(item.getApi_id(), type.getTypeName());
+                String realname ;
+                if(gameid2wikiid != null){
+                    realname = ShipUtils.getWikiFileName(item.getApi_id(), gameid2wikiid.get(item.getApi_id()), type.getTypeName());
+                } else {
+                    realname = ShipUtils.getWikiFileName(item.getApi_id(), null, type.getTypeName());
+                }
                 if(realname == null) {
                     realname = obfsname;
                     filePath += "/others";
@@ -873,6 +882,7 @@ public class Start2Downloader {
                 .replaceAll("#", "23")
 //                .replaceAll("!", "")
                 .replaceAll("'", "27")
+                .replaceAll(" ", "+")
                 ;
     }
 
@@ -902,6 +912,20 @@ public class Start2Downloader {
      */
     public void setDownloadFolder(String downloadFolder) {
         this.downloadFolder = downloadFolder;
+    }
+
+    /**
+     * @param seasonal the seasonal to set
+     */
+    public void setSeasonal(boolean seasonal) {
+        this.seasonal = seasonal;
+    }
+
+    /**
+     * @param gameid2wikiid the gameid2wikiid to set
+     */
+    public void setGameid2wikiid(Map<Integer, String> gameid2wikiid) {
+        this.gameid2wikiid = gameid2wikiid;
     }
     
 }

@@ -19,7 +19,7 @@ public final class ConstantValue {
     public final static String FILESEPARATOR = File.separator;
     public static final String CLASSPATH;
     public final static String TEMP_FOLDER = 
-            String.format("%s%s", System.getProperty("java.io.tmpdir"), "kcscanner");
+            String.format("%s/%s", System.getProperty("java.io.tmpdir"), "kcscanner");
     
     public final static String SCANNAME_START2 = "Start2";
     public final static String SCANNAME_LASTMODIFIED = "Lastmodified";

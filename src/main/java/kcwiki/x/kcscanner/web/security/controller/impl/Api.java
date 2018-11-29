@@ -6,17 +6,21 @@
 package kcwiki.x.kcscanner.web.security.controller.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.core.files.FileController;
+import kcwiki.x.kcscanner.core.kcdata.KcdataController;
 import kcwiki.x.kcscanner.core.start2.Start2Controller;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
+import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
 import kcwiki.x.kcscanner.initializer.AppConfigs;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
@@ -25,6 +29,7 @@ import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +55,8 @@ public class Api {
     @Autowired
     Start2Controller start2Controller;
     @Autowired
+    KcdataController kcdataController;
+    @Autowired
     Start2Analyzer start2Analyzer;
     @Autowired
     UploadStart2 uploadStart2;
@@ -61,7 +68,7 @@ public class Api {
     
     @RequestMapping("/test")
     public String apitest(@RequestParam(value="name", defaultValue="World") String name) {
-        return "Hello "+name;
+        return "Hello " + name + "<br>";
     }
     
     @RequestMapping("/pushimgs")
@@ -92,7 +99,11 @@ public class Api {
                new Runnable() {
                     @Override
                     public void run() {
-                        fileController.autoScan();
+                        try{
+                            fileController.autoScan();
+                        } catch (Exception ex) {
+                            LOG.error(ExceptionUtils.getStackTrace(ex));
+                        }
                     }
                 },  
                1,  
@@ -103,26 +114,42 @@ public class Api {
     
     @RequestMapping("/stopmonitor")
     public String stopmonitor() {
+        if(executor == null)
+            return "No monitor running...";
         executor.shutdownNow();
         messagePublisher.publish("stop monitor...");
         return "SUCCESS";
     }
     
     @RequestMapping("/diffstart2")
-    public String diffstart2(@RequestParam(value="src", defaultValue="2018090300") String src, @RequestParam(value="dest", defaultValue="2018090904") String dest) {
+    public String diffstart2(@RequestParam(value="src", defaultValue="") String src, 
+            @RequestParam(value="dest", defaultValue="") String dest, 
+            @RequestParam(value="seasonal", defaultValue="true") String seasonal,
+            @RequestParam(value="alldata", defaultValue="false") String alldata) {
         RequestConfig requestConfig;
         if(appConfigs.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
         }
-        String scrStr = HttpUtils.getHttpBody(String.format("http://api.kcwiki.moe/start2/%s", src), requestConfig);
-        String destStr = HttpUtils.getHttpBody(String.format("http://api.kcwiki.moe/start2/%s", dest), requestConfig);
+        boolean isAlldata = "true".equals(alldata.toLowerCase());
+        Map<Integer, String> data = null;
+        if(isAlldata){
+            data = kcdataController.getShipWikiID();
+        }
+        String scrStr = StringUtils.isBlank(src)? 
+                HttpUtils.getHttpBody("http://api.kcwiki.moe/start2/prev", requestConfig): 
+                HttpUtils.getHttpBody(String.format("http://api.kcwiki.moe/start2/%s", src), requestConfig);
+        String destStr = StringUtils.isBlank(dest)? 
+                HttpUtils.getHttpBody("http://api.kcwiki.moe/start2", requestConfig): 
+                HttpUtils.getHttpBody(String.format("http://api.kcwiki.moe/start2/%s", dest), requestConfig);
+        
         if(StringUtils.isBlank(scrStr) || StringUtils.isBlank(destStr)){
             return "FAIL NULL";
         }
-        start2Controller.downloadFile(Start2Utils.start2pojo(scrStr), Start2Utils.start2pojo(destStr));
-        return "SUCCESS \r\n" + "src: " + src + "dest: " + dest;
+        boolean isSeasonal = "true".equals(seasonal.toLowerCase());
+        start2Controller.downloadFile(Start2Utils.start2pojo(scrStr), Start2Utils.start2pojo(destStr), isSeasonal, data);
+        return "SUCCESS" + "<br>isSeasonal:\t" + isSeasonal + "<br><br>src: <br>" + src + "<br>dest: <br>" + dest;
     }
     
     @RequestMapping("/scanfile")
@@ -138,10 +165,10 @@ public class Api {
         if(!password.equals("password"))
             return "Fail";
         start2Controller.getLatestStart2Data();
-        return String.format("start2 status: \r\n"
-                + "PrevStart2Data: \r\n %s"
-                + "Start2Data: \r\n %s"
-                + "PrevStart2DataTimestamp: \r\n %s", 
+        return String.format("start2 status: <br>"
+                + "PrevStart2Data: %s <br>"
+                + "Start2Data: %s<br>"
+                + "PrevStart2DataTimestamp: %s", 
                 start2Controller.getPrevStart2Data().toString(),
                 start2Controller.getStart2Data().toString(),
                 start2Controller.getPrevStart2DataTimestamp().toString()
@@ -157,11 +184,37 @@ public class Api {
     }
     
     @RequestMapping("/downloaddata")
-    public String downloaddata(@RequestParam(value="password", defaultValue="World") String password) {
+    public String downloaddata(@RequestParam(value="password", defaultValue="World") String password, @RequestParam(value="seasonal", defaultValue="true") String seasonal) {
         if(!password.equals("password"))
             return "Fail";
-        start2Controller.downloadFile(false);
-        return "SUCCESS";
+        boolean isSeasonal = "true".equals(seasonal.toLowerCase());
+        start2Controller.downloadFile(false, isSeasonal);
+        return "SUCCESS" + "<br>isSeasonal:\t" + isSeasonal;
+    }
+    
+    @RequestMapping("/downloadall")
+    public String downloadall(@RequestParam(value="password", defaultValue="World") String password, 
+            @RequestParam(value="seasonal", defaultValue="true") String seasonal,
+            @RequestParam(value="alldata", defaultValue="false") String alldata) {
+        if(!password.equals("password"))
+            return "Fail";
+        boolean isSeasonal = "true".equals(seasonal.toLowerCase());
+        boolean isAlldata = "true".equals(alldata.toLowerCase());
+        Map<Integer, String> data = null;
+        if(isAlldata){
+            data = kcdataController.getShipWikiID();
+        }
+        
+        RequestConfig requestConfig;
+        if(appConfigs.isAllow_use_proxy()){
+            requestConfig = httpClientConfig.makeProxyConfig(true);
+        } else {
+            requestConfig = httpClientConfig.makeProxyConfig(false);
+        }
+        String destStr = HttpUtils.getHttpBody("http://api.kcwiki.moe/start2", requestConfig);
+
+        start2Controller.downloadFile(null, Start2Utils.start2pojo(destStr), isSeasonal, data);
+        return "SUCCESS" + "<br>isSeasonal:\t" + isSeasonal;
     }
     
 }
