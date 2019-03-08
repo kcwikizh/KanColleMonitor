@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class JsonUtils<T> {
     static final Logger LOG = LoggerFactory.getLogger(JsonUtils.class);
@@ -59,6 +59,14 @@ public class JsonUtils<T> {
         if(objectMapper == null)
             objectMapper = new ObjectMapper();
         return objectMapper.readTree(json);
+    }
+    
+    public static JsonNode diffObject(Object source, Object target, ObjectMapper objectMapper) {
+        if(objectMapper == null)
+            objectMapper = new ObjectMapper();
+        JsonNode targetNode = objectMapper.valueToTree(target);
+        JsonNode sourceNode = objectMapper.valueToTree(source);
+        return JsonDiff.asJson(sourceNode, targetNode);
     }
     
 }

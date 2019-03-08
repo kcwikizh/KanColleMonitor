@@ -13,7 +13,7 @@ import kcwiki.x.kcscanner.database.entity.SystemScanEntity;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public interface SystemScanMapper {
     @MapKey("name")

@@ -18,7 +18,7 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_shipupgrade;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * https://qiita.com/rch850/items/30825e6ff0811fdc011d
  * https://stackoverflow.com/questions/7421474/how-can-i-tell-jackson-to-ignore-a-property-for-which-i-dont-have-control-over
  * 

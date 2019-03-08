@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Api_mst_equip_ship {
     

@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core.entity.lua;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class LuaShipEntity {
     

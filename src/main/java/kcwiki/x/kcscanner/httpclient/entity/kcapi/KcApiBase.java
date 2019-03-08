@@ -8,7 +8,7 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * @param <T>
  */
 public class KcApiBase <T> {

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Start2Utils extends JsonUtils {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Start2Utils.class);

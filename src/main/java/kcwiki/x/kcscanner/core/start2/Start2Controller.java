@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -40,6 +41,7 @@ import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
+import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.tools.SpringUtils;
 import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
@@ -53,7 +55,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class Start2Controller {
@@ -90,6 +92,10 @@ public class Start2Controller {
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
         publishFolder = runtimeValue.PUBLISH_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
+        if(!new File(publishFolder).exists())
+            new File(publishFolder).mkdirs();
     }
     
     public boolean getLatestStart2Data() {
@@ -105,12 +111,15 @@ public class Start2Controller {
             start2Data = Start2Utils.start2pojo(start2raw);
             AppDataCache.start2data = start2Data;
             Start2DataEntity start2DataEntity = start2DataService.getLatestData();
+            messagePublisher.publish("start2获取成功", WebsocketMessageType.KanColleScanner_System_Info);
             if(start2DataEntity != null) {
                 String prevStart2 = start2DataEntity.getData();
                 prevStart2Data = Start2Utils.start2pojo(prevStart2);
                 prevStart2DataTimestamp = start2DataEntity.getTimestamp();
+                messagePublisher.publish("旧start2获取成功，时间戳为： "+prevStart2DataTimestamp, WebsocketMessageType.KanColleScanner_System_Info);
                 JsonNode patch = Start2Utils.getPatch(prevStart2, start2raw);
                 if(patch != null) {
+                    messagePublisher.publish("patch数据为： "+patch.size(), WebsocketMessageType.KanColleScanner_System_Info);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
@@ -138,6 +147,14 @@ public class Start2Controller {
         }
         if(source == null)
             source = new Start2();
+        if(new File(downloadFolder).exists()) {
+            try {
+                FileUtils.deleteDirectory(new File(downloadFolder));
+                new File(downloadFolder).mkdirs();
+            } catch (IOException ex) {
+                LOG.error("无法删除downloadFolder。\r\n {}", ExceptionUtils.getStackTrace(ex));
+            }
+        }
         Start2Analyzer start2Analyzer = SpringUtils.getBean(Start2Analyzer.class);
         Start2Downloader start2Downloader = SpringUtils.getBean(Start2Downloader.class);
         start2Downloader.setSeasonal(isSeasonal);
@@ -166,7 +183,10 @@ public class Start2Controller {
     }
     
     public void downloadFile(boolean isPreScan, boolean isSeasonal){
-        downloadFile(prevStart2Data, start2Data, isPreScan, isSeasonal, null);
+        messagePublisher.publish("原旧Start2文件时间戳为： "+prevStart2DataTimestamp.toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        Start2DataEntity start2DataEntity = start2DataService.getLatestData();
+        messagePublisher.publish("现旧Start2文件时间戳为： "+start2DataEntity.getTimestamp().toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        downloadFile(Start2Utils.start2pojo(start2DataEntity.getData()), start2Data, isPreScan, isSeasonal, null);
     }
     
     public void downloadFile(boolean isSeasonal){
@@ -277,7 +297,7 @@ public class Start2Controller {
     }
     
     private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
-        LOG.info("broadcast");
+        LOG.debug("broadcast");
         if(fileList.containsKey("New")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);

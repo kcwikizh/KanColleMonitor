@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Enemies {
     private int no;

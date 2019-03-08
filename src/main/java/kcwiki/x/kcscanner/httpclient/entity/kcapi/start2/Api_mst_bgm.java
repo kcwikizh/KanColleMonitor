@@ -11,7 +11,7 @@ import org.apache.commons.lang3.builder.EqualsExclude;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Api_mst_bgm
 {

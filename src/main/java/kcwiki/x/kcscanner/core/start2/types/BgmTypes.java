@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core.start2.types;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public enum BgmTypes implements BaseStart2Enum {
     

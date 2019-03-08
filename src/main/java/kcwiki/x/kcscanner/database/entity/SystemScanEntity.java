@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class SystemScanEntity {
     private Integer id;

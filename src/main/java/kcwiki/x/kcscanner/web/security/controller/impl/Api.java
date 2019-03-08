@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @RestController
 @RequestMapping("/api")
@@ -93,6 +93,8 @@ public class Api {
     
     @RequestMapping("/startmonitor")
     public String startmonitor() {
+        if(executor != null)
+            executor.shutdownNow();
         executor = Executors.newScheduledThreadPool(3); 
         messagePublisher.publish("start monitoring...");
         executor.scheduleAtFixedRate(  
@@ -168,10 +170,12 @@ public class Api {
         return String.format("start2 status: <br>"
                 + "PrevStart2Data: %s <br>"
                 + "Start2Data: %s<br>"
-                + "PrevStart2DataTimestamp: %s", 
+                + "PrevStart2DataTimestamp: %s"
+                + "diff: %s<br>",
                 start2Controller.getPrevStart2Data().toString(),
                 start2Controller.getStart2Data().toString(),
-                start2Controller.getPrevStart2DataTimestamp().toString()
+                start2Controller.getPrevStart2DataTimestamp().toString(),
+                JsonUtils.object2json(JsonUtils.diffObject(start2Controller.getPrevStart2Data(), start2Controller.getStart2Data(), null), null)
         );
     }
     

@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class FileController {
@@ -79,6 +79,10 @@ public class FileController {
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
         publishFolder = runtimeValue.PUBLISH_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
+        if(!new File(publishFolder).exists())
+            new File(publishFolder).mkdirs();
     }
     
     public void startScan(boolean isPreScan) {
@@ -137,7 +141,7 @@ public class FileController {
         if(servers.isEmpty())
             return;
         String tempFolder = String.format("%s/%s", TEMP_FOLDER, "autoscan");
-        LOG.info("autoScan - tempFolder: " + tempFolder);
+        LOG.debug("autoScan - tempFolder: " + tempFolder);
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
         isStartDownload = true;
@@ -240,7 +244,7 @@ public class FileController {
     }
     
     private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
-        LOG.info("broadcast");
+        LOG.debug("broadcast");
         if(fileList.containsKey("New")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);

@@ -18,7 +18,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * https://www.jianshu.com/p/d05303d34222
  * http://www.ruanyifeng.com/blog/2016/04/cors.html
  * https://www.jianshu.com/p/af8360b83a9f
@@ -29,12 +29,18 @@ public class CorsConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-//           .allowedOrigins("http://localhost:48080", "http://localhost:58080", "null")
-           .allowedOrigins("https://baidu.com")
-           .allowedMethods("GET", "HEAD", "POST","PUT", "DELETE", "OPTIONS")
-           .maxAge(3600)
-           .allowCredentials(true);
+        //添加映射路径
+                registry.addMapping("/api/**")
+                        //放行哪些原始域
+                        .allowedOrigins("http://127.0.0.1")
+                        //是否发送Cookie信息
+                        .allowCredentials(true)
+                        //放行哪些原始域(请求方式)
+                        .allowedMethods("GET", "HEAD", "POST","PUT", "DELETE", "OPTIONS")
+                        //放行哪些原始域(头部信息)
+                        .allowedHeaders("*")
+                        //暴露哪些头部信息（因为跨域访问默认不能获取全部头部信息）
+                        .exposedHeaders("Header1", "Header2");
     
     }
 

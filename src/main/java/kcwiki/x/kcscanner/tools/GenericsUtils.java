@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * https://blog.csdn.net/changsa65/article/details/78790881
  */
 public class GenericsUtils {

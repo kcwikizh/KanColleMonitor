@@ -25,7 +25,7 @@ import org.springframework.web.util.WebUtils;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class BaseAuthenticateController extends BaseController {
@@ -33,7 +33,6 @@ public class BaseAuthenticateController extends BaseController {
     protected HttpServletRequest request;  
     protected HttpServletResponse response;  
     protected HttpSession session;  
-    protected boolean isLogined = false;
     
     @Autowired
     EmailService emailService;
@@ -44,7 +43,7 @@ public class BaseAuthenticateController extends BaseController {
         this.response = response;  
         this.session = request.getSession(false);  
         Assert.notNull(request, "Request must not be null");  
-        isLogined = (boolean) (WebUtils.getSessionAttribute(this.request, "isLogined") == null ? false:WebUtils.getSessionAttribute(request, "isLogined"));
+        boolean isLogined = (boolean) (WebUtils.getSessionAttribute(this.request, "isLogined") == null ? false:WebUtils.getSessionAttribute(request, "isLogined"));
 //        this.isLogined = session.getAttribute("isLogined")== null ? false:"true".equals(session.getAttribute("isLogined"));
     }  
     

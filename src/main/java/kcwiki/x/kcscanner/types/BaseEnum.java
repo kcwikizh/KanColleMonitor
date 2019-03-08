@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.types;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public interface BaseEnum {
     int getCode();

@@ -28,7 +28,7 @@ import org.apache.hc.core5.http.config.RegistryBuilder;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class DefaultHttpClient {
     

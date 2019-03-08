@@ -9,7 +9,7 @@ import kcwiki.x.kcscanner.types.BaseHttpStatus;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 
 public class BaseMessageEntity<T> {

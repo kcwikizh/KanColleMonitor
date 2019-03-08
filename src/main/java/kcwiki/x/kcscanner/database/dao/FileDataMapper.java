@@ -14,7 +14,7 @@ import kcwiki.x.kcscanner.types.FileType;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public interface FileDataMapper {
     @MapKey("path")

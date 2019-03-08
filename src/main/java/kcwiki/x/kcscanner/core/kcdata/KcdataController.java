@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author iTeamVEP
+ * @author iHaru
  */
 @Component
 public class KcdataController {

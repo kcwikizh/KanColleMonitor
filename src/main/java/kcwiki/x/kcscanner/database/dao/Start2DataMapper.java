@@ -11,7 +11,7 @@ import kcwiki.x.kcscanner.database.entity.Start2DataEntity;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public interface Start2DataMapper {
     List<Start2DataEntity> selectAllStart2Data(@Param("tablename") String tablename);

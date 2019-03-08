@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 //@Component
 //@Scope("prototype")
@@ -95,7 +95,10 @@ public class ScriptUtils {
                     try { 
                         conn = (HttpURLConnection) new URL(scriptPath).openConnection();
                         conn.setConnectTimeout(3*1000); 
-                        conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)"); 
+                        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"); 
+                        conn.setRequestProperty("DNT", "1");
+                        conn.setRequestProperty("Cache-Control", "no-cache, no-store, must-revalidate");
+                        conn.setRequestProperty("Prama", "no-cache");
                         byte[] buffer = new byte[1024];  
                         int len = 0;  
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();  

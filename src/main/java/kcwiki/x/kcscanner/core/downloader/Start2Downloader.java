@@ -6,6 +6,7 @@
 package kcwiki.x.kcscanner.core.downloader;
 
 import com.google.common.collect.Lists;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -55,7 +56,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 @Scope("prototype")
@@ -85,6 +86,8 @@ public class Start2Downloader {
     public void initMethod() {
         host = AppDataCache.kcHost;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
         if(StringUtils.isBlank(host))
             LOG.error("KcServer地址为空");
         if(appConfigs.isAllow_use_proxy()){
@@ -867,7 +870,7 @@ public class Start2Downloader {
     } 
     
     private String parseString(String str){
-        LOG.info("parseString: {}", str);
+        LOG.debug("parseString: {}", str);
         return str.replaceAll("/", "2F").replaceAll("\\\\", "2F")
                 .replaceAll("\\|", "7C")
                 .replaceAll(":", "3A")

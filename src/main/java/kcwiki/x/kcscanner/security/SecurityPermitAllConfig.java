@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Configuration
 public class SecurityPermitAllConfig extends WebSecurityConfigurerAdapter {

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 //https://github.com/TeamFleet/Ooyodo/blob/master/libs/commons/get-pic-url-ship.js
 //https://github.com/TeamFleet/Ooyodo/blob/master/libs/commons/get-pic-url-equipment.js

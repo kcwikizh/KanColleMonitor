@@ -15,7 +15,7 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class AppDataCache {
     //public static AppConfigs appConfigs = null;

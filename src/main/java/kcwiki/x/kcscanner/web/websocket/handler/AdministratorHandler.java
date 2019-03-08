@@ -20,7 +20,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * https://blog.csdn.net/Veggiel/article/details/52300093
  */
 @Component
@@ -130,7 +130,7 @@ public class AdministratorHandler extends TextWebSocketHandler {
         Set<Integer> clientIds = users.keySet();
         WebSocketSession session;
         TextMessage textMessage = new TextMessage(message);
-        LOG.info(message);
+        LOG.debug(message);
         for (Integer clientId : clientIds) {
             try {
                 session = users.get(clientId);

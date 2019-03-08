@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core.utils.entity.mapinfo;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class MapInfoSprite {
     

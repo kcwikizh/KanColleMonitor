@@ -11,7 +11,7 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * http://www.baeldung.com/properties-with-spring#java
  */
 @Configuration

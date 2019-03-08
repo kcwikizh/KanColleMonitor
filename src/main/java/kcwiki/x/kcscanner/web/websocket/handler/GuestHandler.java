@@ -19,7 +19,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class GuestHandler extends TextWebSocketHandler {
@@ -128,7 +128,7 @@ public class GuestHandler extends TextWebSocketHandler {
         Set<Integer> clientIds = users.keySet();
         WebSocketSession session;
         TextMessage textMessage = new TextMessage(message);
-        LOG.info(message);
+        LOG.debug(message);
         for (Integer clientId : clientIds) {
             try {
                 session = users.get(clientId);

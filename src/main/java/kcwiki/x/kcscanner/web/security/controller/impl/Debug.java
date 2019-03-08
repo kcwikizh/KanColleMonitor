@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
- * @author iTeamVEP
+ * @author iHaru
  */
 @RestController
 @RequestMapping(value = {"/debug","/Debug"}, produces = "text/html;charset=UTF-8")

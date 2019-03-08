@@ -20,7 +20,7 @@ import org.springframework.beans.BeansException;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Start2Comparetor {
     private final static Logger LOG = LoggerFactory.getLogger(Start2Comparetor.class);

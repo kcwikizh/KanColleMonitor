@@ -10,7 +10,7 @@ import kcwiki.x.kcscanner.types.MessageLevel;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class WebsocketMessageData<T> {
 

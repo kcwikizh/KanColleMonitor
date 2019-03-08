@@ -10,7 +10,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class ShipUtils extends BaseUrl {
 
