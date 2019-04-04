@@ -26,6 +26,8 @@ public class Api_mst_shipupgrade {
     private int api_catapult_count;
 
     private int api_report_count;
+    
+    private int api_aviation_mat_count;
 
     private int api_sortno;
 
@@ -153,6 +155,20 @@ public class Api_mst_shipupgrade {
      */
     public void setApi_sortno(int api_sortno) {
         this.api_sortno = api_sortno;
+    }
+
+    /**
+     * @return the api_aviation_mat_count
+     */
+    public int getApi_aviation_mat_count() {
+        return api_aviation_mat_count;
+    }
+
+    /**
+     * @param api_aviation_mat_count the api_aviation_mat_count to set
+     */
+    public void setApi_aviation_mat_count(int api_aviation_mat_count) {
+        this.api_aviation_mat_count = api_aviation_mat_count;
     }
 
 }
