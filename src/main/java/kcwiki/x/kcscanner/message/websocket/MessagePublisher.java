@@ -7,11 +7,11 @@ package kcwiki.x.kcscanner.message.websocket;
 
 import kcwiki.x.kcscanner.message.websocket.entity.WebsocketMessageData;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import kcwiki.x.kcscanner.web.websocket.handler.AdministratorHandler;
 import kcwiki.x.kcscanner.web.websocket.handler.GuestHandler;
+import org.iharu.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

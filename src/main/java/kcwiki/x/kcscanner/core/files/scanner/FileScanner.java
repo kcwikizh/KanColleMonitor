@@ -37,15 +37,14 @@ import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import kcwiki.x.kcscanner.tools.CommontUtils;
-import kcwiki.x.kcscanner.tools.ScriptUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.iharu.util.CommontUtils;
+import org.iharu.util.ScriptUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,7 +58,7 @@ public class FileScanner {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FileScanner.class);
     
     @Autowired
-    AppConfigs appConfigs;  
+    AppConfig appConfig;  
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -100,7 +99,7 @@ public class FileScanner {
         File _file;
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         RequestConfig requestConfig;
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -141,7 +140,7 @@ public class FileScanner {
         List<String> downloadList = new ArrayList<>();
         CloseableHttpClient httpclient = HttpClients.createDefault();
         RequestConfig requestConfig;
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -206,7 +205,7 @@ public class FileScanner {
     public List<String> ScanServer(Map<String, String> serverList){
         List<String> result = new ArrayList();
         RequestConfig requestConfig;
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);

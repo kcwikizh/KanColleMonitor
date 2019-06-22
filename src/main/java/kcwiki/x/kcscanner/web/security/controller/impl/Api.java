@@ -6,7 +6,6 @@
 package kcwiki.x.kcscanner.web.security.controller.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -20,17 +19,17 @@ import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
-import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import kcwiki.x.kcscanner.tools.JsonUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.iharu.util.JsonUtils;
+import org.iharu.web.BaseController;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,11 +42,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api")
-public class Api {
+public class Api extends BaseController {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Api.class);
     
     @Autowired
-    AppConfigs appConfigs; 
+    AppConfig appConfig; 
     @Autowired
     HttpClientConfig httpClientConfig;
     @Autowired
@@ -129,7 +128,7 @@ public class Api {
             @RequestParam(value="seasonal", defaultValue="true") String seasonal,
             @RequestParam(value="alldata", defaultValue="false") String alldata) {
         RequestConfig requestConfig;
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -149,6 +148,10 @@ public class Api {
         if(StringUtils.isBlank(scrStr) || StringUtils.isBlank(destStr)){
             return "FAIL NULL";
         }
+        if(scrStr.contains("error"))
+            return scrStr;
+        if(destStr.contains("error"))
+            return destStr;
         boolean isSeasonal = "true".equals(seasonal.toLowerCase());
         start2Controller.downloadFile(Start2Utils.start2pojo(scrStr), Start2Utils.start2pojo(destStr), isSeasonal, data);
         return "SUCCESS" + "<br>isSeasonal:\t" + isSeasonal + "<br><br>src: <br>" + src + "<br>dest: <br>" + dest;
@@ -175,7 +178,7 @@ public class Api {
                 start2Controller.getPrevStart2Data().toString(),
                 start2Controller.getStart2Data().toString(),
                 start2Controller.getPrevStart2DataTimestamp().toString(),
-                JsonUtils.object2json(JsonUtils.diffObject(start2Controller.getPrevStart2Data(), start2Controller.getStart2Data(), null), null)
+                JsonUtils.object2json(JsonUtils.diffObject(start2Controller.getPrevStart2Data(), start2Controller.getStart2Data()))
         );
     }
     
@@ -184,7 +187,7 @@ public class Api {
         if(!password.equals("password"))
             return "Fail";
         start2Controller.getLatestStart2Data();
-        return JsonUtils.object2json(AppDataCache.start2data, null);
+        return JsonUtils.object2json(AppDataCache.start2data);
     }
     
     @RequestMapping("/downloaddata")
@@ -210,7 +213,7 @@ public class Api {
         }
         
         RequestConfig requestConfig;
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);

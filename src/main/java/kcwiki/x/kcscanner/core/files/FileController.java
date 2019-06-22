@@ -15,27 +15,26 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import static kcwiki.x.kcscanner.constant.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.core.files.processor.FileAnalyzer;
 import kcwiki.x.kcscanner.core.files.scanner.FileScanner;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
-import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.iharu.util.ZipCompressorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,7 +46,7 @@ public class FileController {
     private static final Logger LOG = LoggerFactory.getLogger(FileController.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -74,7 +73,7 @@ public class FileController {
     
     @PostConstruct
     public void initMethod() {
-        host = appConfigs.getKcserver_host();
+        host = appConfig.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;

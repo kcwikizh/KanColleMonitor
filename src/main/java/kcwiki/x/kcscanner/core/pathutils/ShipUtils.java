@@ -78,6 +78,9 @@ public class ShipUtils extends BaseUrl {
             case "full_dmg":
                 wikiType = "KanMusu%sHDDmgIllust";
                 break;
+            case "special":
+                wikiType = "KanMusu%sHDAtkIllust";
+                break;
             default:
                 return null;
         }

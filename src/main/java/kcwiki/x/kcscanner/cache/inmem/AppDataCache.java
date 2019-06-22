@@ -18,7 +18,6 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
  * @author iHaru
  */
 public class AppDataCache {
-    //public static AppConfigs appConfigs = null;
     public static Map<String, SystemScanEntity> systemScanEntitys = null;
     public static boolean isAppInit = false;
     public static boolean isReadyReceive = false;

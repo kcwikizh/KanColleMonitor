@@ -12,8 +12,8 @@ import com.flipkart.zjsonpatch.JsonDiff;
 import java.io.IOException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
-import kcwiki.x.kcscanner.tools.JsonUtils;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
+import org.iharu.util.JsonUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -52,13 +52,9 @@ public class Start2Utils extends JsonUtils {
         return null;
     }
     
-    public static String start2str(Start2 start2) {
-        return object2json(start2, null);
-    }
-    
     public static Start2 jsonnode2start2(JsonNode start2Node) {
         try {
-            return jsonnode2object(start2Node, Start2.class, null);
+            return JsonUtils.jsonnode2object(start2Node, Start2.class);
         } catch (IOException ex) {
             LOG.error("start2Node数据转换为POJO时发生错误。错误代码为： {}{}", 
                     LINESEPARATOR,

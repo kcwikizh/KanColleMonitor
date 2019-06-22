@@ -11,8 +11,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.database.service.LogService;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import kcwiki.x.kcscanner.types.MessageLevel;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 
 /**
  *
@@ -37,14 +37,14 @@ public class EmailService {
     @Autowired
     public JavaMailSender emailSender;
     @Autowired
-    private AppConfigs appConfigs;
+    private AppConfig appConfig;
     @Autowired
     private LogService logService;
    
     public void sendSimpleEmail(MessageLevel msgTypes, String text){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
-        message.setFrom(appConfigs.getMail_sender());//发件人
-        message.setTo(appConfigs.getMail_recipient());//收件人
+        message.setFrom(appConfig.getMail_sender());//发件人
+        message.setTo(appConfig.getMail_recipient());//收件人
         String title = titleGenerator(msgTypes);
         message.setSubject(title);//主题
         message.setText(text);//正文
@@ -63,8 +63,8 @@ public class EmailService {
     
     public void sendSimpleEmail(MessageLevel msgTypes, Throwable ex){
         SimpleMailMessage message = new SimpleMailMessage();//消息构造器
-        message.setFrom(appConfigs.getMail_sender());//发件人
-        message.setTo(appConfigs.getMail_recipient());//收件人
+        message.setFrom(appConfig.getMail_sender());//发件人
+        message.setTo(appConfig.getMail_recipient());//收件人
         String title = titleGenerator(msgTypes);
         message.setSubject(title);//主题
         String text = String.format(
@@ -114,6 +114,6 @@ public class EmailService {
     }
     
     private String titleGenerator(MessageLevel msgTypes) {
-        return String.format("%s，类型为：%s", appConfigs.getMail_title(), msgTypes.getName());
+        return String.format("%s，类型为：%s", appConfig.getMail_title(), msgTypes.getName());
     }
 }

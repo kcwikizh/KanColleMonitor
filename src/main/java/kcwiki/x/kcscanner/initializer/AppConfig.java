@@ -16,7 +16,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 //@PropertySource(value={"file:${user.dir}/configuration/appconfig/appconfig.properties"})
-public class AppConfigs {
+public class AppConfig {
     
     
     @Value("${user.dir}")
@@ -43,6 +43,8 @@ public class AppConfigs {
     private String folder_publish;
     @Value("${myprops.global.folder.workspace}")
     private String folder_workspace;
+    @Value("${myprops.websocket.token}")
+    private String websocket_token;
     @Value("${myprops.global.file.filelist}")
     private String file_filelist;
     @Value("${myprops.application.superuser.username}")
@@ -443,6 +445,20 @@ public class AppConfigs {
      */
     public void setSystem_user_dir(String system_user_dir) {
         this.system_user_dir = system_user_dir;
+    }
+
+    /**
+     * @return the websocket_token
+     */
+    public String getWebsocket_token() {
+        return websocket_token;
+    }
+
+    /**
+     * @param websocket_token the websocket_token to set
+     */
+    public void setWebsocket_token(String websocket_token) {
+        this.websocket_token = websocket_token;
     }
 
 }

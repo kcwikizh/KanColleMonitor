@@ -7,31 +7,20 @@ package kcwiki.x.kcscanner.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.logging.Level;
-import javax.script.ScriptException;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
+import static kcwiki.x.kcscanner.constant.ConstantValue.SCANNAME_LASTMODIFIED;
+import static kcwiki.x.kcscanner.constant.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.core.files.FileController;
 import kcwiki.x.kcscanner.core.start2.Start2Controller;
 import kcwiki.x.kcscanner.database.entity.SystemScanEntity;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
-import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_LASTMODIFIED;
-import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
-import kcwiki.x.kcscanner.tools.JsonUtils;
-import kcwiki.x.kcscanner.tools.ScriptUtils;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.iharu.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +35,7 @@ public class CoreInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(CoreInitializer.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     @Autowired
     FileController fileController;
     @Autowired
@@ -96,12 +85,12 @@ public class CoreInitializer {
             try {
                 _list = objectMapper.readValue(json,
                     new TypeReference<List<Long>>(){});
+                _list.add(timestamp);
             } catch (IOException ex) {
                 LOG.error(ExceptionUtils.getStackTrace(ex));
             }
         }
-        _list.add(timestamp);
-        return JsonUtils.object2json(_list, null);
+        return JsonUtils.object2json(_list);
     }
     
     

@@ -14,9 +14,9 @@ import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.core.kcdata.entity.ship.KcdataShip;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
-import kcwiki.x.kcscanner.tools.JsonUtils;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.iharu.util.JsonUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ public class KcdataController {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(KcdataController.class);
     
     @Autowired
-    AppConfigs appConfigs;  
+    AppConfig appConfig;  
     @Autowired
     HttpClientConfig httpClientConfig;
     private RequestConfig requestConfig;
@@ -39,7 +39,7 @@ public class KcdataController {
     
     @PostConstruct
     public void initMethod() {
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -54,7 +54,7 @@ public class KcdataController {
                 return null;
             }
             try{
-                shipData = JsonUtils.json2object(_json, new TypeReference<List<KcdataShip>>(){}, null);
+                shipData = JsonUtils.json2object(_json, new TypeReference<List<KcdataShip>>(){});
             } catch (IOException ex) {
                 LOG.error("尝试解析kcdada-ship数据失败。");
                 return null;

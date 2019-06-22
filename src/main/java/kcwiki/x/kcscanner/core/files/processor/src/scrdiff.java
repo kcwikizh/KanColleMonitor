@@ -19,8 +19,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
-import kcwiki.x.kcscanner.tools.Encoder;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,13 +43,13 @@ public class scrdiff {
             if(!oldFile.contains(".as") || !newFile.contains(".as")) return diffData;
             String line;
             if(new File(oldFile).exists()) {
-                nBfr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(oldFile)), Encoder.codeString(oldFile)));
+                nBfr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(oldFile)), "UTF-8"));
                 while((line=nBfr.readLine())!=null){
                     oldFileData.put(getHash(line), line);
                 }
             }
             
-            nBfr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(newFile)), Encoder.codeString(newFile)));
+            nBfr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(newFile)), "UTF-8"));
             while((line=nBfr.readLine())!=null){
                 lines.add(line);
                 if(!oldFileData.containsKey(getHash(line))){

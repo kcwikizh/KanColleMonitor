@@ -46,12 +46,12 @@ import org.springframework.stereotype.Component;
 
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.exception.BaseException;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import kcwiki.x.kcscanner.types.KcServerStatus;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import kcwiki.x.kcscanner.types.ServiceTypes;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 /*
  *  *   *   *
  *   此为KcWiki拆包工具子模块，如需单独使用请手动清除main方法的注释。

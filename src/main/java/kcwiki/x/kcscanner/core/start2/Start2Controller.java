@@ -12,18 +12,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import static kcwiki.x.kcscanner.constant.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.core.downloader.Start2Downloader;
 import kcwiki.x.kcscanner.core.downloader.entity.DownloadStatus;
+import kcwiki.x.kcscanner.core.entity.CombinedShipEntity;
 import kcwiki.x.kcscanner.core.entity.Start2PatchEntity;
+import kcwiki.x.kcscanner.core.entity.lua.ship.Ship;
+import kcwiki.x.kcscanner.core.entity.lua.ship.Slotitem;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
@@ -32,22 +36,21 @@ import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.Start2DataService;
 import kcwiki.x.kcscanner.exception.BaseException;
+import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_slotitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.AutoLogin;
 import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
-import kcwiki.x.kcscanner.tools.JsonUtils;
-import kcwiki.x.kcscanner.tools.SpringUtils;
-import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.iharu.spring.SpringUtils;
+import org.iharu.util.ZipCompressorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +65,7 @@ public class Start2Controller {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Controller.class);
     
     @Autowired
-    private AppConfigs appConfigs;
+    private AppConfig appConfig;
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -87,7 +90,7 @@ public class Start2Controller {
     
     @PostConstruct
     public void initMethod() {
-        host = appConfigs.getKcserver_host();
+        host = appConfig.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
@@ -164,6 +167,7 @@ public class Start2Controller {
         if(start2PatchEntity != null){
             start2Downloader.setDownloadFolder(downloadFolder);
             start2Downloader.download(start2PatchEntity, isPreDownload);
+//            genWikiLuaTable(start2PatchEntity);
             drawConclusion(start2Downloader, isPreDownload);
             saveData(start2Downloader, isPreDownload);
             start2Downloader.getDownloadResult().clear();
@@ -191,6 +195,25 @@ public class Start2Controller {
     
     public void downloadFile(boolean isSeasonal){
         downloadFile(Start2Utils.start2pojo(start2DataService.getLatestData().getData()) , start2Data, false, isSeasonal, null);
+    }
+    
+    private void genWikiLuaTable(Start2PatchEntity start2PatchEntity){
+        Map<Integer, Ship> ships = new LinkedHashMap();
+        Map<Integer, Slotitem> slotitems = new LinkedHashMap();
+        start2PatchEntity.getNewShip().forEach(item -> {
+            Ship ship = new Ship();
+            ship.setId(item.getApi_id());
+            ship.setSortno(item.getApi_sortno());
+            ship.setJp(item.getApi_name());
+            ship.setYomi(item.getApi_yomi());
+            ship.setStype(item.getApi_stype());
+            
+            
+            
+        });
+        start2PatchEntity.getNewSlotitem().forEach(item->{
+        
+        });
     }
     
     private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload){
@@ -321,13 +344,13 @@ public class Start2Controller {
     
     public String fetchStart2OnlineData() {
         AutoLogin autoLogin = SpringUtils.getBean(AutoLogin.class);
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             autoLogin.setConfig(true);
         }else{ 
             autoLogin.setConfig(false);
         }
-        autoLogin.setUser_name(appConfigs.getKcserver_account_username());
-        autoLogin.setUser_pwd(appConfigs.getKcserver_account_password());
+        autoLogin.setUser_name(appConfig.getKcserver_account_username());
+        autoLogin.setUser_pwd(appConfig.getKcserver_account_password());
         try{
             if(!autoLogin.netStart()) {
                 LOG.warn("获取Start2数据时失败。");

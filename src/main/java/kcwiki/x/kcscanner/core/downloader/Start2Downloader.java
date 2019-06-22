@@ -41,13 +41,13 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_mapinfo;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_payitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_slotitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_useitem;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
-import kcwiki.x.kcscanner.tools.CommontUtils;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.iharu.util.CommontUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +64,7 @@ public class Start2Downloader {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Downloader.class);
     
     @Autowired
-    AppConfigs appConfigs;  
+    AppConfig appConfig;  
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -90,7 +90,7 @@ public class Start2Downloader {
             new File(downloadFolder).mkdirs();
         if(StringUtils.isBlank(host))
             LOG.error("KcServer地址为空");
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
