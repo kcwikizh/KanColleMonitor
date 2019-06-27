@@ -30,6 +30,8 @@ public class Start2Utils extends JsonUtils {
      * @return  Patch数据
      */
     public static JsonNode getPatch(String scrStr, String tarStr) {
+        if(scrStr == null || tarStr == null)
+            return null;
         ObjectMapper mapper = new ObjectMapper();
         JsonNode source = mapper.valueToTree(start2pojo(scrStr));
         JsonNode target = mapper.valueToTree(start2pojo(tarStr));
@@ -48,6 +50,7 @@ public class Start2Utils extends JsonUtils {
             LOG.error("获取Start2原始数据转换为POJO时发生错误，数据格式可能有更改。错误代码为： {}{}", 
                     LINESEPARATOR,
                     ExceptionUtils.getStackTrace(ex));
+            LOG.error(rawStart2);
         }
         return null;
     }
