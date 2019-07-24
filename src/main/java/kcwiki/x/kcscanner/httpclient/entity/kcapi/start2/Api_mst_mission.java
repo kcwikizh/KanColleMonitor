@@ -9,6 +9,7 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi.start2;
  *
  * @author iHaru
  */
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -37,16 +38,8 @@ public class Api_mst_mission
     private List<Integer> api_win_item1;
 
     private List<Integer> api_win_item2;
-    
-    private List<Integer> api_win_mat_level;
-    
-    private List<Integer> api_sample_fleet;
 
     private Integer api_return_flag;
-    
-    private Integer api_reset_type;
-    
-    private Integer api_damage_type;
     
     @Override
     public boolean equals(Object obj) {
@@ -152,61 +145,5 @@ public class Api_mst_mission
     }
     public Integer getApi_return_flag(){
         return this.api_return_flag;
-    }
-
-    /**
-     * @return the api_reset_type
-     */
-    public Integer getApi_reset_type() {
-        return api_reset_type;
-    }
-
-    /**
-     * @param api_reset_type the api_reset_type to set
-     */
-    public void setApi_reset_type(Integer api_reset_type) {
-        this.api_reset_type = api_reset_type;
-    }
-
-    /**
-     * @return the api_damage_type
-     */
-    public Integer getApi_damage_type() {
-        return api_damage_type;
-    }
-
-    /**
-     * @param api_damage_type the api_damage_type to set
-     */
-    public void setApi_damage_type(Integer api_damage_type) {
-        this.api_damage_type = api_damage_type;
-    }
-
-    /**
-     * @return the api_win_mat_level
-     */
-    public List<Integer> getApi_win_mat_level() {
-        return api_win_mat_level;
-    }
-
-    /**
-     * @param api_win_mat_level the api_win_mat_level to set
-     */
-    public void setApi_win_mat_level(List<Integer> api_win_mat_level) {
-        this.api_win_mat_level = api_win_mat_level;
-    }
-
-    /**
-     * @return the api_sample_fleet
-     */
-    public List<Integer> getApi_sample_fleet() {
-        return api_sample_fleet;
-    }
-
-    /**
-     * @param api_sample_fleet the api_sample_fleet to set
-     */
-    public void setApi_sample_fleet(List<Integer> api_sample_fleet) {
-        this.api_sample_fleet = api_sample_fleet;
     }
 }
