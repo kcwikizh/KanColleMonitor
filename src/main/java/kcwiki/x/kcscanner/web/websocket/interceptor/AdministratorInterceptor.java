@@ -34,6 +34,7 @@ public class AdministratorInterceptor extends DefaultWebsocketInterceptor {
     protected SessionEntity valid(ServletServerHttpRequest servletRequest, HttpSession session)
     {
         List<String> tokenlist = servletRequest.getHeaders().get("x-access-token");
+        LOG.debug("tokenlist: {}", tokenlist);
         if ((tokenlist == null) || (tokenlist.isEmpty())) {
           return null;
         }
@@ -42,7 +43,6 @@ public class AdministratorInterceptor extends DefaultWebsocketInterceptor {
           return null;
         }
         LOG.debug("x-access-token: {}", access_token);
-        LOG.debug("{}", servletRequest.getHeaders());
         if (!Base64.getEncoder().withoutPadding().encodeToString(appConfig.getWebsocket_token().getBytes()).equals(access_token)) {
           return null;
         }
