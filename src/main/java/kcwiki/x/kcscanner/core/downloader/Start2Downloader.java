@@ -140,6 +140,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Ship downloading");
         
         if(!start2PatchEntity.getNewSlotitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Slotitem)){
@@ -175,6 +176,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Slotitem downloading");
         
         if(!start2PatchEntity.getNewFurniture().isEmpty()){
             if(!downloadResult.containsKey(FileType.Furniture)){
@@ -210,6 +212,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Furniture downloading");
         
         if(!start2PatchEntity.getNewUseitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Useitem)){
@@ -229,6 +232,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Useitem).addAll(downloadUseitem(start2PatchEntity.getModifiedUseitem(), false));
         }
+        LOG.info("Useitem downloading");
         
         if(!start2PatchEntity.getNewPayitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Payitem)){
@@ -248,6 +252,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Payitem).addAll(downloadPayitem(start2PatchEntity.getModifiedPayitem(), false));
         }
+        LOG.info("Payitem downloading");
         
         if(!start2PatchEntity.getNewMapinfo().isEmpty()){
             if(!downloadResult.containsKey(FileType.Mapinfo)){
@@ -267,6 +272,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Mapinfo).addAll(downloadMapinfo(start2PatchEntity.getModifiedMapinfo(), start2PatchEntity.getAllMapbgm(), false));
         }
+        LOG.info("Mapinfo downloading");
         
         if(!start2PatchEntity.getNewMapbgm().isEmpty()){
             if(!downloadResult.containsKey(FileType.Mapbgm)){
@@ -297,6 +303,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Mapbgm).addAll(downloadModifiedMapbgm(start2PatchEntity.getModifiedMapbgm()));
         }
+        LOG.info("Mapbgm downloading");
         
         if(!start2PatchEntity.getNewBgm().isEmpty()){
             if(!downloadResult.containsKey(FileType.Bgm)){
@@ -332,6 +339,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Bgm downloading");
         
         if(!asyncResults.isEmpty()){
             asyncResults.forEach(future -> {
@@ -339,6 +347,7 @@ public class Start2Downloader {
             });
             asyncResults.clear();
         }
+        LOG.info("Main item download finished");
         
         if(AppDataCache.isDownloadShipVoice){
             if(!downloadResult.containsKey(FileType.ShipVoice)){
@@ -379,6 +388,7 @@ public class Start2Downloader {
                     asyncResults.clear();
                 }
             }
+            LOG.info("Ship voice download finished");
         }
     }
     

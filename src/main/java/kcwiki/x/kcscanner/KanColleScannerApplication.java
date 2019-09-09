@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan("kcwiki.x.kcscanner.database.dao")  
-@ComponentScan(basePackages = {"org.iharu", "kcwiki.x.kcscanner"})
+@ComponentScan(basePackages = {"org.iharu", "kcwiki.x.kcscanner", "kcwiki.management.xcontrolled"})
 public class KanColleScannerApplication {
     private static final Logger LOG = LoggerFactory.getLogger(KanColleScannerApplication.class);
     

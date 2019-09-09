@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -237,8 +238,10 @@ public class Start2Controller {
             messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
             broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
+        LOG.info("start2文件下载完成");
         ZipCompressorUtils.createZip(downloadFolder, runtimeValue.WORKSPACE_FOLDER, "editorialfile.zip");
-        messagePublisher.publish("start2文件下载完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("start2文件打包完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
+        LOG.info("start2文件打包完成 请前往下载");
     }
     
     private void saveData(Start2Downloader start2Downloader, boolean isPreDownload) {
@@ -278,6 +281,7 @@ public class Start2Controller {
                 updateList.clear();
             }
         }
+        LOG.info("文件数据保存完成");
     }
     
     private Map<String, List<String>> copyFiles(String destRoot, List<DownloadStatus> insertList, List<DownloadStatus> updateList){

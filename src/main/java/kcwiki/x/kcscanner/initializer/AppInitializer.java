@@ -78,7 +78,7 @@ public class AppInitializer {
         getKcServers();
         createFolder();
         AppDataCache.systemScanEntitys = systemScanService.getAll();
-        coreInitializer.coreDataInit();
+//        coreInitializer.coreDataInit();
         long endTime=System.currentTimeMillis();
         LOG.info("Temp folder: {}", ConstantValue.TEMP_FOLDER);
         LOG.info("WebRoot folder: {}", RUNTIMEValue.WEBROOT_FOLDER);

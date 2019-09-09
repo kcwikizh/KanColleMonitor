@@ -249,15 +249,28 @@ public class Start2Analyzer {
     
     private void diffData() {
         primaryStart2Entity.getApi_mst_ship().forEach((k, v) -> {
+//            if(k.equals("飛行場姫"))
+//                System.out.print("");
             if(!secondaryStart2Entity.getApi_mst_ship().containsKey(k)){
                 getStart2PatchEntity().getNewShip().addAll(v);
             } else {
                 v.forEach(obj -> {
-                    secondaryStart2Entity.getApi_mst_ship().get(k).forEach(_obj -> {
-                        if(obj.getApi_id().equals(_obj.getApi_id()) && !obj.equals(_obj)){
-                            getStart2PatchEntity().getModifiedShip().add(obj);
+                    int id = -1;
+                    for(CombinedShipEntity _obj:secondaryStart2Entity.getApi_mst_ship().get(k)){
+                        id = _obj.getApi_id();
+                        if(obj.equals(_obj)){
+                            return;
                         }
-                    });
+                    }
+                    if(obj.getApi_id().equals(id))
+                        getStart2PatchEntity().getModifiedShip().add(obj);
+                    else
+                        getStart2PatchEntity().getNewShip().add(obj);
+//                    secondaryStart2Entity.getApi_mst_ship().get(k).forEach(_obj -> {
+//                        if(obj.getApi_id().equals(_obj.getApi_id()) && !obj.equals(_obj)){
+//                            getStart2PatchEntity().getModifiedShip().add(obj);
+//                        }
+//                    });
                 });
             }
         });
