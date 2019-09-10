@@ -11,12 +11,12 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * http://www.baeldung.com/properties-with-spring#java
  */
 @Configuration
 //@PropertySource(value={"file:${user.dir}/configuration/appconfig/appconfig.properties"})
-public class AppConfigs {
+public class AppConfig {
     
     
     @Value("${user.dir}")

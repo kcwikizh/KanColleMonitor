@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core.downloader;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public final class ConstantURL {
     String SHIP_ROOT = "/kcs/resources/swf/ships/";

@@ -11,14 +11,14 @@ import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.LogMapper;
 import kcwiki.x.kcscanner.database.entity.log.LogEntity;
 import kcwiki.x.kcscanner.exception.BaseException;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import kcwiki.x.kcscanner.types.MessageLevel;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Service
 public class LogService {

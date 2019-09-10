@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi.start2;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 import java.util.ArrayList;
 import java.util.List;

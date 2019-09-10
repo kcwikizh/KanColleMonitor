@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core.start2.types;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public enum ShipTypes implements BaseStart2Enum {
     
@@ -27,7 +27,8 @@ public enum ShipTypes implements BaseStart2Enum {
     Remodel("remodel"),
     RemodelDmg("remodel_dmg"),
     SupplyCharacter("supply_character"),
-    SupplyCharacterDmg("supply_character_dmg")
+    SupplyCharacterDmg("supply_character_dmg"),
+    Special("special")
     ;
     
     private final String typeName;

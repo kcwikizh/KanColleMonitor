@@ -5,14 +5,7 @@
  */
 package kcwiki.x.kcscanner.game.coredecryptor;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +20,7 @@ public class AnalyzeList {
     @Autowired
     MessagePublisher messagePublisher;
     
-    public static void shipData() throws IOException{
+    public static void shipData() {
         
     }
     

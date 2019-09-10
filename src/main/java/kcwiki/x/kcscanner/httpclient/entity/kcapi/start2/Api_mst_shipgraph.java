@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi.start2;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +50,8 @@ public class Api_mst_shipgraph
     private List<Integer> api_weda ;
 
     private List<Integer> api_wedb ;
+    
+    private List<Integer> api_pa ;
 
     /**
      * @return the api_id
@@ -315,6 +317,20 @@ public class Api_mst_shipgraph
      */
     public void setApi_wedb(List<Integer> api_wedb) {
         this.api_wedb = api_wedb;
+    }
+
+    /**
+     * @return the api_pa
+     */
+    public List<Integer> getApi_pa() {
+        return api_pa;
+    }
+
+    /**
+     * @param api_pa the api_pa to set
+     */
+    public void setApi_pa(List<Integer> api_pa) {
+        this.api_pa = api_pa;
     }
 
 }

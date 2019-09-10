@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.Future;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,13 +71,13 @@ public class PhashController implements Runnable{
                             NewHashList.put(Scanner.getFeatureValue(newFileFolder+File.separator + newfile.getName()), newFileFolder+File.separator + newfile.getName());
                             count++;
                         }
-                        System.out.print(count+LINESEPARATOR);
+                        LOG.info(count+LINESEPARATOR);
                         count=0;
                         for (File oldfile : oldfileList) {
                             OldHashList.put(Scanner.getFeatureValue(oldFileFolder+File.separator + oldfile.getName()), oldFileFolder+File.separator + oldfile.getName());
                             count++;
                         }
-                        System.out.print(count+LINESEPARATOR);
+                        LOG.info(count+LINESEPARATOR);
                         for(String newfile : NewHashList.keySet()){
                             for(String oldfile : OldHashList.keySet()){
                                 double score=Scanner.calculateSimilarity(newfile, oldfile);

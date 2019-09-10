@@ -5,11 +5,12 @@
  */
 package kcwiki.x.kcscanner.core.pathutils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class ShipUtils extends BaseUrl {
 
@@ -33,7 +34,30 @@ public class ShipUtils extends BaseUrl {
         return getItemUrl4("ship", shipID, picType);
     }
     
-    public static String getWikiFileName(String wikiID, String picType) {
+    private static String getWikiShinkaiFileName(int shipID, String picType) {
+        String wikiType;
+        String wikiID = String.valueOf(shipID);
+        switch(picType){
+            case "full":
+                wikiType = "ShinkaiSeikan%s";
+                break;
+            case "banner":
+                wikiType = "ShinkaiSeikan%sBanner";
+                break;
+            default:
+                return null;
+        }
+        try{
+            return String.format(wikiType, wikiID);
+        } catch (Exception ex) {
+            ExceptionUtils.getStackTrace(ex);
+        }
+        return null;
+    }
+    
+    public static String getWikiFileName(int shipID, String wikiID, String picType) {
+        if(shipID > 1500)
+            return getWikiShinkaiFileName(shipID, picType);
         String wikiType;
         switch(picType){
             case "card":
@@ -54,11 +78,18 @@ public class ShipUtils extends BaseUrl {
             case "full_dmg":
                 wikiType = "KanMusu%sHDDmgIllust";
                 break;
+            case "special":
+                wikiType = "KanMusu%sHDAtkIllust";
+                break;
             default:
                 return null;
         }
         try{
-            return String.format(wikiType, wikiID);
+            if(StringUtils.isBlank(wikiID)){
+                return String.format(wikiType, String.valueOf(shipID));
+            } else {
+                return String.format(wikiType, wikiID);
+            }
         } catch (Exception ex) {
             ExceptionUtils.getStackTrace(ex);
         }

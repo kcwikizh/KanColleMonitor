@@ -15,10 +15,9 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class AppDataCache {
-    //public static AppConfigs appConfigs = null;
     public static Map<String, SystemScanEntity> systemScanEntitys = null;
     public static boolean isAppInit = false;
     public static boolean isReadyReceive = false;
@@ -34,6 +33,7 @@ public class AppDataCache {
     public static final Map<String, String> stringCache = new ConcurrentHashMap<>();
     public static final Map<String, String> worldVersionCache = new ConcurrentHashMap<>();
     public static final Map<String, String> maintenanceInfo = new ConcurrentHashMap<>();
+    public static final Map<String, String> dataHashCache = new ConcurrentHashMap<>();
     
     public static final Set<String> existTables = new HashSet<>();
     

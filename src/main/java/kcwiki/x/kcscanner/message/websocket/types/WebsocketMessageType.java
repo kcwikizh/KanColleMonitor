@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.message.websocket.types;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public enum WebsocketMessageType {
     KanColleScanner_System_Info("系统消息"),

@@ -9,7 +9,7 @@ import kcwiki.x.kcscanner.types.BaseEnum;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public enum PublishTypes implements BaseEnum{
     Admin(0),

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -18,7 +19,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class GuestHandler extends TextWebSocketHandler {
@@ -45,7 +46,7 @@ public class GuestHandler extends TextWebSocketHandler {
         if (session.isOpen()) {
             session.close();
         }
-        System.out.println("连接出错");
+        LOG.error(ExceptionUtils.getStackTrace(exception));
         users.remove(getUserId(session));
     }
 
@@ -109,10 +110,10 @@ public class GuestHandler extends TextWebSocketHandler {
                 newMessage = "";
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(ExceptionUtils.getStackTrace(e));
             return false;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.error(ExceptionUtils.getStackTrace(e));
             return false;
         }
     }
@@ -127,6 +128,7 @@ public class GuestHandler extends TextWebSocketHandler {
         Set<Integer> clientIds = users.keySet();
         WebSocketSession session;
         TextMessage textMessage = new TextMessage(message);
+        LOG.debug(message);
         for (Integer clientId : clientIds) {
             try {
                 session = users.get(clientId);
@@ -134,7 +136,7 @@ public class GuestHandler extends TextWebSocketHandler {
                     session.sendMessage(textMessage);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error(ExceptionUtils.getStackTrace(e));
                 allSendSuccess = false;
             }
         }

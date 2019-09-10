@@ -18,7 +18,7 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_shipupgrade;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  * https://qiita.com/rch850/items/30825e6ff0811fdc011d
  * https://stackoverflow.com/questions/7421474/how-can-i-tell-jackson-to-ignore-a-property-for-which-i-dont-have-control-over
  * 
@@ -152,14 +152,18 @@ public class CombinedShipEntity {
         }
     }
     
-    private JsonNode convertToNode(Object obj, ObjectMapper mapper){
+    private JsonNode convertToNode(CombinedShipEntity obj, ObjectMapper mapper){
         Map<String, Object> map = mapper.convertValue(obj, Map.class);
         map.remove("api_id");
         map.remove("wiki_id");
 //        map.remove("api_version");
+        map.remove("api_aftershipid");
+        map.remove("api_filename");
         ((List<Map<String, Object>> ) map.get("api_mst_shipupgrade"))
                 .forEach(o -> {
                     o.remove("api_id");
+                    o.remove("api_current_ship_id");
+                    o.remove("api_original_ship_id");
                 });
         JsonNode node = mapper.valueToTree(map);
         return node;

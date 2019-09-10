@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.httpclient.entity.kcapi.start2;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Api_mst_furniture
 {

@@ -12,17 +12,23 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import static kcwiki.x.kcscanner.constant.ConstantValue.SCANNAME_START2;
 import kcwiki.x.kcscanner.core.downloader.Start2Downloader;
 import kcwiki.x.kcscanner.core.downloader.entity.DownloadStatus;
+import kcwiki.x.kcscanner.core.entity.CombinedShipEntity;
 import kcwiki.x.kcscanner.core.entity.Start2PatchEntity;
+import kcwiki.x.kcscanner.core.entity.lua.ship.Ship;
+import kcwiki.x.kcscanner.core.entity.lua.ship.Slotitem;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Analyzer;
 import kcwiki.x.kcscanner.core.start2.processor.Start2Utils;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
@@ -31,21 +37,21 @@ import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.Start2DataService;
 import kcwiki.x.kcscanner.exception.BaseException;
+import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_slotitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Start2;
 import kcwiki.x.kcscanner.httpclient.impl.AutoLogin;
 import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import static kcwiki.x.kcscanner.tools.ConstantValue.SCANNAME_START2;
-import kcwiki.x.kcscanner.tools.SpringUtils;
-import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.iharu.spring.SpringUtils;
+import org.iharu.util.ZipCompressorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,14 +59,14 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class Start2Controller {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Controller.class);
     
     @Autowired
-    private AppConfigs appConfigs;
+    private AppConfig appConfig;
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -85,11 +91,15 @@ public class Start2Controller {
     
     @PostConstruct
     public void initMethod() {
-        host = appConfigs.getKcserver_host();
+        host = appConfig.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
         publishFolder = runtimeValue.PUBLISH_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
+        if(!new File(publishFolder).exists())
+            new File(publishFolder).mkdirs();
     }
     
     public boolean getLatestStart2Data() {
@@ -105,12 +115,15 @@ public class Start2Controller {
             start2Data = Start2Utils.start2pojo(start2raw);
             AppDataCache.start2data = start2Data;
             Start2DataEntity start2DataEntity = start2DataService.getLatestData();
+            messagePublisher.publish("start2获取成功", WebsocketMessageType.KanColleScanner_System_Info);
             if(start2DataEntity != null) {
                 String prevStart2 = start2DataEntity.getData();
                 prevStart2Data = Start2Utils.start2pojo(prevStart2);
                 prevStart2DataTimestamp = start2DataEntity.getTimestamp();
+                messagePublisher.publish("旧start2获取成功，时间戳为： "+prevStart2DataTimestamp, WebsocketMessageType.KanColleScanner_System_Info);
                 JsonNode patch = Start2Utils.getPatch(prevStart2, start2raw);
                 if(patch != null) {
+                    messagePublisher.publish("patch数据为： "+patch.size(), WebsocketMessageType.KanColleScanner_System_Info);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
@@ -124,20 +137,38 @@ public class Start2Controller {
         return false;
     }
     
-    private void downloadFile(Start2 source, Start2 target, boolean isPreDownload){
+    /**
+     * 
+     * @param source 旧的Start2数据
+     * @param target 新的Start2数据
+     * @param isPreDownload
+     * @param isSeasonal 
+     */
+    private void downloadFile(Start2 source, Start2 target, boolean isPreDownload, boolean isSeasonal, Map<Integer, String> kcdata){
         if(target == null){
-            LOG.error("target Start2 为null。");
+            LOG.error("target Start2 can not be null。");
             return;
         }
         if(source == null)
             source = new Start2();
+        if(new File(downloadFolder).exists()) {
+            try {
+                FileUtils.deleteDirectory(new File(downloadFolder));
+                new File(downloadFolder).mkdirs();
+            } catch (IOException ex) {
+                LOG.error("无法删除downloadFolder。\r\n {}", ExceptionUtils.getStackTrace(ex));
+            }
+        }
         Start2Analyzer start2Analyzer = SpringUtils.getBean(Start2Analyzer.class);
         Start2Downloader start2Downloader = SpringUtils.getBean(Start2Downloader.class);
+        start2Downloader.setSeasonal(isSeasonal);
+        start2Downloader.setGameid2wikiid(kcdata);
         
         Start2PatchEntity start2PatchEntity = start2Analyzer.getDiffStart2(null, source,  target);
         if(start2PatchEntity != null){
             start2Downloader.setDownloadFolder(downloadFolder);
             start2Downloader.download(start2PatchEntity, isPreDownload);
+//            genWikiLuaTable(start2PatchEntity);
             drawConclusion(start2Downloader, isPreDownload);
             saveData(start2Downloader, isPreDownload);
             start2Downloader.getDownloadResult().clear();
@@ -149,13 +180,41 @@ public class Start2Controller {
      * 
      * @param source 旧用于对比的Start2文件
      * @param target 最新用于下载资源的Start2文件
+     * @param isSeasonal
+     * @param kcdata
      */
-    public void downloadFile(Start2 source, Start2 target) {
-        downloadFile(source ,target ,false);
+    public void downloadFile(Start2 source, Start2 target, boolean isSeasonal, Map<Integer, String> kcdata) {
+        downloadFile(source ,target, false, isSeasonal, kcdata);
     }
     
-    public void downloadFile(boolean isPreScan){
-        downloadFile(prevStart2Data ,start2Data ,isPreScan);
+    public void downloadFile(boolean isPreScan, boolean isSeasonal){
+        messagePublisher.publish("原旧Start2文件时间戳为： "+prevStart2DataTimestamp.toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        Start2DataEntity start2DataEntity = start2DataService.getLatestData();
+        messagePublisher.publish("现旧Start2文件时间戳为： "+start2DataEntity.getTimestamp().toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        downloadFile(Start2Utils.start2pojo(start2DataEntity.getData()), start2Data, isPreScan, isSeasonal, null);
+    }
+    
+    public void downloadFile(boolean isSeasonal){
+        downloadFile(Start2Utils.start2pojo(start2DataService.getLatestData().getData()) , start2Data, false, isSeasonal, null);
+    }
+    
+    private void genWikiLuaTable(Start2PatchEntity start2PatchEntity){
+        Map<Integer, Ship> ships = new LinkedHashMap();
+        Map<Integer, Slotitem> slotitems = new LinkedHashMap();
+        start2PatchEntity.getNewShip().forEach(item -> {
+            Ship ship = new Ship();
+            ship.setId(item.getApi_id());
+            ship.setSortno(item.getApi_sortno());
+            ship.setJp(item.getApi_name());
+            ship.setYomi(item.getApi_yomi());
+            ship.setStype(item.getApi_stype());
+            
+            
+            
+        });
+        start2PatchEntity.getNewSlotitem().forEach(item->{
+        
+        });
     }
     
     private void drawConclusion(Start2Downloader start2Downloader, boolean isPreDownload){
@@ -174,13 +233,15 @@ public class Start2Controller {
                     updateList.add(item);
                 }
             });
-            int sumCount = fileResult.get(k).size();
-            int successCount = v.size();
+            int successCount = fileResult.get(k).size();
+            int sumCount = v.size();
             messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
             broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
-        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, downloadFolder, "editorialfile.zip");
-        messagePublisher.publish("start2文件下载完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
+        LOG.info("start2文件下载完成");
+        ZipCompressorUtils.createZip(downloadFolder, runtimeValue.WORKSPACE_FOLDER, "editorialfile.zip");
+        messagePublisher.publish("start2文件打包完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
+        LOG.info("start2文件打包完成 请前往下载");
     }
     
     private void saveData(Start2Downloader start2Downloader, boolean isPreDownload) {
@@ -220,6 +281,7 @@ public class Start2Controller {
                 updateList.clear();
             }
         }
+        LOG.info("文件数据保存完成");
     }
     
     private Map<String, List<String>> copyFiles(String destRoot, List<DownloadStatus> insertList, List<DownloadStatus> updateList){
@@ -262,7 +324,7 @@ public class Start2Controller {
     }
     
     private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
-        LOG.info("broadcast");
+        LOG.debug("broadcast");
         if(fileList.containsKey("New")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
@@ -286,13 +348,13 @@ public class Start2Controller {
     
     public String fetchStart2OnlineData() {
         AutoLogin autoLogin = SpringUtils.getBean(AutoLogin.class);
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             autoLogin.setConfig(true);
         }else{ 
             autoLogin.setConfig(false);
         }
-        autoLogin.setUser_name(appConfigs.getKcserver_account_username());
-        autoLogin.setUser_pwd(appConfigs.getKcserver_account_password());
+        autoLogin.setUser_name(appConfig.getKcserver_account_username());
+        autoLogin.setUser_pwd(appConfig.getKcserver_account_password());
         try{
             if(!autoLogin.netStart()) {
                 LOG.warn("获取Start2数据时失败。");

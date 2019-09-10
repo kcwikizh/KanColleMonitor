@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import kcwiki.x.kcscanner.constant.ConstantValue;
 import kcwiki.x.kcscanner.core.CoreInitializer;
 import kcwiki.x.kcscanner.database.TableName;
 import kcwiki.x.kcscanner.database.dao.UtilsMapper;
@@ -23,9 +24,8 @@ import kcwiki.x.kcscanner.database.service.UtilsService;
 import kcwiki.x.kcscanner.exception.BaseException;
 import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
-import kcwiki.x.kcscanner.tools.ConstantValue;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
 import kcwiki.x.kcscanner.types.ServiceTypes;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +33,14 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class AppInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     @Autowired 
     RuntimeValue RUNTIMEValue;
     @Autowired
@@ -59,7 +59,7 @@ public class AppInitializer {
     @PostConstruct
     public void initMethod() {
 //        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "32");
-        if(appConfigs == null){
+        if(appConfig == null){
             LOG.error("找不到程序主配置文件 程序初始化失败。");
         }
     }
@@ -73,17 +73,17 @@ public class AppInitializer {
         LOG.info("KanColle Monitor: initialization started");
         isInit = true;
         long startTime=System.currentTimeMillis();
-        AppDataCache.kcHost = appConfigs.getKcserver_host();
+        AppDataCache.kcHost = appConfig.getKcserver_host();
         checkDatabase();
         getKcServers();
         createFolder();
         AppDataCache.systemScanEntitys = systemScanService.getAll();
-        coreInitializer.coreDataInit();
+//        coreInitializer.coreDataInit();
         long endTime=System.currentTimeMillis();
         LOG.info("Temp folder: {}", ConstantValue.TEMP_FOLDER);
         LOG.info("WebRoot folder: {}", RUNTIMEValue.WEBROOT_FOLDER);
         LOG.info("CoreListFilePath folder: {}", RUNTIMEValue.FILE_SCANCORE);
-        LOG.info("AppRoot folder: {}", appConfigs.getSystem_user_dir());
+        LOG.info("AppRoot folder: {}", appConfig.getSystem_user_dir());
         if (isInit) {
             AppDataCache.isAppInit = true;
             AppDataCache.isReadyReceive = true;
@@ -97,7 +97,7 @@ public class AppInitializer {
     
     private void getKcServers() {
         try {
-            String repBody = HttpUtils.getHttpBody(appConfigs.getKcwiki_api_servers(), httpClientConfig.makeProxyConfig(false));
+            String repBody = HttpUtils.getHttpBody(appConfig.getKcwiki_api_servers(), httpClientConfig.makeProxyConfig(false));
             LOG.debug(repBody);
             if(repBody == null)
                 throw new BaseException(ServiceTypes.KanColleScanner, "尝试从KcApi获取服务器列表时发生错误。");

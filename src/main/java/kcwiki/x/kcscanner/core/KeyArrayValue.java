@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.core;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class KeyArrayValue {
     //舰娘语音加密数组

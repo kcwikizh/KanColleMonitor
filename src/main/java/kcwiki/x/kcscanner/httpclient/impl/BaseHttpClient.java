@@ -16,10 +16,9 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
-import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import static kcwiki.x.kcscanner.tools.ConstantValue.LINESEPARATOR;
+import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -27,7 +26,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 @Scope("prototype")
@@ -37,7 +36,7 @@ public class BaseHttpClient {
     @Autowired
     protected MessagePublisher messagePublisher;
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     
     //设置连接管理器
     protected PoolingHttpClientConnectionManager connManager ;
@@ -48,7 +47,7 @@ public class BaseHttpClient {
     
     public void setConfig(boolean useProxy){
         if(useProxy) {
-            HttpHost proxy = new HttpHost(appConfigs.getProxy_host(), appConfigs.getProxy_port());
+            HttpHost proxy = new HttpHost(appConfig.getProxy_host(), appConfig.getProxy_port());
             config = RequestConfig.custom().setProxy(proxy).setRedirectsEnabled(true).build();
         } else {
             config = RequestConfig.custom().setRedirectsEnabled(true).build();

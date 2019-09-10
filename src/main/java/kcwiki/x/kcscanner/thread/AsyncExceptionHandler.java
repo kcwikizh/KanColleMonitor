@@ -13,7 +13,7 @@ import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class AsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncExceptionHandler.class);

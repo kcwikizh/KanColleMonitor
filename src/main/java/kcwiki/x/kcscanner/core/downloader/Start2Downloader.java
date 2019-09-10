@@ -6,8 +6,7 @@
 package kcwiki.x.kcscanner.core.downloader;
 
 import com.google.common.collect.Lists;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
@@ -43,13 +41,13 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_mapinfo;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_payitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_slotitem;
 import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_useitem;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
-import kcwiki.x.kcscanner.tools.CommontUtils;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.iharu.util.CommontUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +56,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 @Scope("prototype")
@@ -66,7 +64,7 @@ public class Start2Downloader {
     private static final Logger LOG = LoggerFactory.getLogger(Start2Downloader.class);
     
     @Autowired
-    AppConfigs appConfigs;  
+    AppConfig appConfig;  
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -76,6 +74,8 @@ public class Start2Downloader {
     RequestConfig requestConfig;
     String[] bgmsuffix = {};
     private String downloadFolder;
+    private boolean seasonal = false;
+    private Map<Integer, String> gameid2wikiid = null;
     
     Date date = new Date();
     String host;
@@ -86,9 +86,11 @@ public class Start2Downloader {
     public void initMethod() {
         host = AppDataCache.kcHost;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
         if(StringUtils.isBlank(host))
             LOG.error("KcServer地址为空");
-        if(appConfigs.isAllow_use_proxy()){
+        if(appConfig.isAllow_use_proxy()){
             requestConfig = httpClientConfig.makeProxyConfig(true);
         } else {
             requestConfig = httpClientConfig.makeProxyConfig(false);
@@ -125,6 +127,9 @@ public class Start2Downloader {
             if(!downloadResult.containsKey(FileType.Ship)){
                 getDownloadResult().put(FileType.Ship, new ArrayList());
             }
+            if(!fileResult.containsKey(FileType.Ship)){
+                getFileResult().put(FileType.Ship, new ArrayList());
+            }
             List<List<CombinedShipEntity>> _list = Lists.partition(start2PatchEntity.getModifiedShip(), 5);
             CompletableFuture[] cfs = _list.stream()
                 .map(item -> CompletableFuture.supplyAsync(() -> downloadShip(item, false), executorService)
@@ -135,6 +140,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Ship downloading");
         
         if(!start2PatchEntity.getNewSlotitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Slotitem)){
@@ -170,6 +176,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Slotitem downloading");
         
         if(!start2PatchEntity.getNewFurniture().isEmpty()){
             if(!downloadResult.containsKey(FileType.Furniture)){
@@ -205,6 +212,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Furniture downloading");
         
         if(!start2PatchEntity.getNewUseitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Useitem)){
@@ -224,6 +232,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Useitem).addAll(downloadUseitem(start2PatchEntity.getModifiedUseitem(), false));
         }
+        LOG.info("Useitem downloading");
         
         if(!start2PatchEntity.getNewPayitem().isEmpty()){
             if(!downloadResult.containsKey(FileType.Payitem)){
@@ -243,6 +252,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Payitem).addAll(downloadPayitem(start2PatchEntity.getModifiedPayitem(), false));
         }
+        LOG.info("Payitem downloading");
         
         if(!start2PatchEntity.getNewMapinfo().isEmpty()){
             if(!downloadResult.containsKey(FileType.Mapinfo)){
@@ -262,6 +272,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Mapinfo).addAll(downloadMapinfo(start2PatchEntity.getModifiedMapinfo(), start2PatchEntity.getAllMapbgm(), false));
         }
+        LOG.info("Mapinfo downloading");
         
         if(!start2PatchEntity.getNewMapbgm().isEmpty()){
             if(!downloadResult.containsKey(FileType.Mapbgm)){
@@ -292,6 +303,7 @@ public class Start2Downloader {
             }
             getFileResult().get(FileType.Mapbgm).addAll(downloadModifiedMapbgm(start2PatchEntity.getModifiedMapbgm()));
         }
+        LOG.info("Mapbgm downloading");
         
         if(!start2PatchEntity.getNewBgm().isEmpty()){
             if(!downloadResult.containsKey(FileType.Bgm)){
@@ -327,6 +339,7 @@ public class Start2Downloader {
             ).toArray(CompletableFuture[]::new);
             asyncResults.add(cfs);
         }
+        LOG.info("Bgm downloading");
         
         if(!asyncResults.isEmpty()){
             asyncResults.forEach(future -> {
@@ -334,6 +347,7 @@ public class Start2Downloader {
             });
             asyncResults.clear();
         }
+        LOG.info("Main item download finished");
         
         if(AppDataCache.isDownloadShipVoice){
             if(!downloadResult.containsKey(FileType.ShipVoice)){
@@ -368,12 +382,13 @@ public class Start2Downloader {
             }
             if(!asyncResults.isEmpty()){
                 if(!asyncResults.isEmpty()){
-                asyncResults.forEach(future -> {
-                    CompletableFuture.allOf(future).join();
-                });
-                asyncResults.clear();
+                    asyncResults.forEach(future -> {
+                        CompletableFuture.allOf(future).join();
+                    });
+                    asyncResults.clear();
+                }
             }
-            }
+            LOG.info("Ship voice download finished");
         }
     }
     
@@ -412,8 +427,15 @@ public class Start2Downloader {
                 if(obfsname == null){
                     continue;
                 }
+                if(seasonal && (type == ShipTypes.Full || type == ShipTypes.FullDmg))
+                    obfsname = obfsname + "_" + item.getApi_filename();
 //                String realname = ShipUtils.getWikiFileName(String.format("%03d", item.getApi_sortno()), type.getTypeName());
-                String realname = ShipUtils.getWikiFileName(String.valueOf(item.getApi_id()), type.getTypeName());
+                String realname ;
+                if(gameid2wikiid != null){
+                    realname = ShipUtils.getWikiFileName(item.getApi_id(), gameid2wikiid.get(item.getApi_id()), type.getTypeName());
+                } else {
+                    realname = ShipUtils.getWikiFileName(item.getApi_id(), null, type.getTypeName());
+                }
                 if(realname == null) {
                     realname = obfsname;
                     filePath += "/others";
@@ -608,7 +630,6 @@ public class Start2Downloader {
     private List<FileDataEntity> downloadPayitem(List<Api_mst_payitem> list, boolean isNew){
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         List<FileDataEntity> dblist = new ArrayList<>();
-        List<DownloadStatus> resultlist = new ArrayList<>();
         String prePath = "kcs2/img/item";
         int version = (int) (Math.random()*90 + 10);
         String filename = "item_payitemicon";
@@ -859,13 +880,22 @@ public class Start2Downloader {
     } 
     
     private String parseString(String str){
-        return str.replace("/", "%2F").replace("\\", "%2F")
-                .replace("|", "%7C")
-                .replace(":", "%3A")
-                .replace("?", "%3F")
-                .replace("\"", "%22")
-                .replace("<", "%3C")
-                .replace(">", "%3E")
+        LOG.debug("parseString: {}", str);
+        return str.replaceAll("/", "2F").replaceAll("\\\\", "2F")
+                .replaceAll("\\|", "7C")
+                .replaceAll(":", "3A")
+                .replaceAll("\\?", "3F")
+                .replaceAll("\"", "22")
+                .replaceAll("<", "3C")
+                .replaceAll(">", "3E")
+                .replaceAll("\\+", "2B")
+//                .replaceAll("-", "")
+//                .replaceAll("_", "")
+                .replaceAll("&", "26")
+                .replaceAll("#", "23")
+//                .replaceAll("!", "")
+                .replaceAll("'", "27")
+                .replaceAll(" ", "+")
                 ;
     }
 
@@ -895,6 +925,20 @@ public class Start2Downloader {
      */
     public void setDownloadFolder(String downloadFolder) {
         this.downloadFolder = downloadFolder;
+    }
+
+    /**
+     * @param seasonal the seasonal to set
+     */
+    public void setSeasonal(boolean seasonal) {
+        this.seasonal = seasonal;
+    }
+
+    /**
+     * @param gameid2wikiid the gameid2wikiid to set
+     */
+    public void setGameid2wikiid(Map<Integer, String> gameid2wikiid) {
+        this.gameid2wikiid = gameid2wikiid;
     }
     
 }

@@ -7,21 +7,21 @@ package kcwiki.x.kcscanner.database.service;
 
 import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.database.dao.UtilsMapper;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Service
 public class UtilsService {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UtilsService.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     @Autowired
     private UtilsMapper utilsMapper;
     
@@ -51,7 +51,7 @@ public class UtilsService {
     }
     
     public boolean existTable(String tablename) {
-        int result = utilsMapper.existTable(appConfigs.getMyprops_database_name(), tablename);
+        int result = utilsMapper.existTable(appConfig.getMyprops_database_name(), tablename);
         return result>0;
     }
     

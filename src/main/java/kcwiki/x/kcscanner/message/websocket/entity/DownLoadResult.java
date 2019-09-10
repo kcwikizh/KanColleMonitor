@@ -10,7 +10,7 @@ import kcwiki.x.kcscanner.types.FileType;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class DownLoadResult {
     private FileType type;

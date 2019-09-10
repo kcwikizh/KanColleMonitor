@@ -30,14 +30,14 @@ import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.exception.BaseException;
-import kcwiki.x.kcscanner.tools.CommontUtils;
-import static kcwiki.x.kcscanner.tools.ConstantValue.FILESEPARATOR;
 import kcwiki.x.kcscanner.types.KcServerStatus;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.slf4j.LoggerFactory;
 import kcwiki.x.kcscanner.types.ServiceTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import static org.iharu.constant.ConstantValue.FILESEPARATOR;
+import org.iharu.util.CommontUtils;
         
 public class HttpUtils {
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
@@ -103,7 +103,7 @@ public class HttpUtils {
     }
 
     public static boolean downloadFile(String url, String filefolder, String filename, RequestConfig config) throws BaseException {
-        if(!url.startsWith("http://") || !url.startsWith("https://")){
+        if(!url.startsWith("http")){
             url = "http://" + url;
         }
         
@@ -209,7 +209,6 @@ public class HttpUtils {
         return null;
 //        throw new ExceptionBase(ServiceTypes.HttpClient, String.format("尝试获取%s时发生错误。", url));
     }
-    
     
     public static String getHttpBody (String url, RequestConfig config) throws BaseException {
         HttpGet httpGet = DefaultMethod.getDefaultGetMethod(url, config);

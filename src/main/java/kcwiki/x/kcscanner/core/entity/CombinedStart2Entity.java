@@ -26,7 +26,7 @@ import kcwiki.x.kcscanner.httpclient.entity.kcapi.start2.Api_mst_useitem;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class CombinedStart2Entity {
     

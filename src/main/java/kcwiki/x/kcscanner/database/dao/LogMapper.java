@@ -10,7 +10,7 @@ import kcwiki.x.kcscanner.database.entity.log.LogEntity;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 //@MapperScan
 public interface LogMapper {

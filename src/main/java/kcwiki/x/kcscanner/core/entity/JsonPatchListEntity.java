@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class JsonPatchListEntity {
     private List<JsonPatchEntity> shipList = new ArrayList<>();

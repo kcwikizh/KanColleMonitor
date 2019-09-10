@@ -16,7 +16,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
 import kcwiki.x.kcscanner.types.MessageLevel;
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 @Scope("prototype")
@@ -36,7 +36,7 @@ public class UploadStart2 extends BaseHttpClient {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UploadStart2.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     
     public boolean upload(StringBuilder buffer) {
         String startdata = buffer.toString();
@@ -48,7 +48,7 @@ public class UploadStart2 extends BaseHttpClient {
                 
                 try (CloseableHttpClient _httpclient = HttpClients.custom().build()) {
                     final List<NameValuePair> nvps = new ArrayList<>();
-                    HttpPost httpPost = new HttpPost(appConfigs.getKcwiki_api_upload_start2_url());
+                    HttpPost httpPost = new HttpPost(appConfig.getKcwiki_api_upload_start2_url());
                     httpPost.setHeader("Host", "acc.kcwiki.org");
                     httpPost.setHeader("connection", "keep-alive");
                     httpPost.setHeader("Cache-Control", "max-age=0");
@@ -58,7 +58,7 @@ public class UploadStart2 extends BaseHttpClient {
                     httpPost.setHeader("DNT", "1");
                     httpPost.setHeader("Accept-Encoding", "gzip, deflate");
                     httpPost.setHeader("Accept-Language", "zh-CN,zh;q=0.8");
-                    nvps.add(new BasicNameValuePair("password", appConfigs.getKcwiki_api_upload_start2_token()));
+                    nvps.add(new BasicNameValuePair("password", appConfig.getKcwiki_api_upload_start2_token()));
                     nvps.add(new BasicNameValuePair("data", startdata));
                     httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                     

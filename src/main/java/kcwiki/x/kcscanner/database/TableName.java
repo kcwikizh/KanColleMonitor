@@ -7,7 +7,7 @@ package kcwiki.x.kcscanner.database;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class TableName {
     public static String getSystemLogTable() {

@@ -15,7 +15,7 @@ import kcwiki.x.kcscanner.core.entity.CombinedShipEntity;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 public class Api_mst_const
 {

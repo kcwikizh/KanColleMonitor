@@ -15,38 +15,38 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
+import static kcwiki.x.kcscanner.constant.ConstantValue.TEMP_FOLDER;
 import kcwiki.x.kcscanner.core.files.processor.FileAnalyzer;
 import kcwiki.x.kcscanner.core.files.scanner.FileScanner;
 import kcwiki.x.kcscanner.database.entity.FileDataEntity;
 import kcwiki.x.kcscanner.database.service.FileDataService;
 import kcwiki.x.kcscanner.database.service.LogService;
 import kcwiki.x.kcscanner.database.service.SystemScanService;
-import kcwiki.x.kcscanner.initializer.AppConfigs;
+import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
 import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
-import static kcwiki.x.kcscanner.tools.ConstantValue.TEMP_FOLDER;
-import kcwiki.x.kcscanner.tools.ZipCompressorUtils;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.iharu.util.ZipCompressorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 
 /**
  *
- * @author x5171
+ * @author iHaru
  */
 @Component
 public class FileController {
     private static final Logger LOG = LoggerFactory.getLogger(FileController.class);
     
     @Autowired
-    AppConfigs appConfigs;
+    AppConfig appConfig;
     @Autowired
     RuntimeValue runtimeValue;
     @Autowired
@@ -73,11 +73,15 @@ public class FileController {
     
     @PostConstruct
     public void initMethod() {
-        host = appConfigs.getKcserver_host();
+        host = appConfig.getKcserver_host();
         if(!host.startsWith("http"))
             host = "http://" + host;
         downloadFolder = runtimeValue.DOWNLOAD_FOLDER;
         publishFolder = runtimeValue.PUBLISH_FOLDER;
+        if(!new File(downloadFolder).exists())
+            new File(downloadFolder).mkdirs();
+        if(!new File(publishFolder).exists())
+            new File(publishFolder).mkdirs();
     }
     
     public void startScan(boolean isPreScan) {
@@ -121,7 +125,7 @@ public class FileController {
                 fileDataService.insertSelected(fileDataList);
             }
             long date = (new Date()).getTime();
-            ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Manual-"+date+".zip");
+            ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Manual-"+date+".zip");
             messagePublisher.publish("核心文件下载完成（Manual） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         } else {
             emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描文件数据时失败。");
@@ -136,12 +140,14 @@ public class FileController {
         if(servers.isEmpty())
             return;
         String tempFolder = String.format("%s/%s", TEMP_FOLDER, "autoscan");
+        LOG.debug("autoScan - tempFolder: " + tempFolder);
         if(!new File(tempFolder).exists())
                 new File(tempFolder).mkdirs();
         isStartDownload = true;
 //        FileUtils.deleteDirectory(new File(tempFolder));
         Map<String, FileDataEntity> existDataList = fileDataService.getTypeData(FileType.Core);
         List<FileDataEntity> result = fileScanner.scan(tempFolder, host, existDataList);
+        
         ArrayList<FileDataEntity> insertList = new ArrayList<>();
         ArrayList<FileDataEntity> updateList = new ArrayList();
         result.forEach(item -> {
@@ -161,10 +167,15 @@ public class FileController {
             if(!updateList.isEmpty()){
                 fileDataService.updateSelected((List<FileDataEntity>) updateList.clone());
             }  
+            LOG.info("autoScan - saveFile done." );
         });
-        broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
+        try{
+            broadcast(copyFiles(tempFolder, publishFolder, insertList, updateList), FileType.Core);
+        }catch(Exception ex){
+            LOG.error(ExceptionUtils.getStackTrace(ex));
+        }
         long date = (new Date()).getTime();
-        ZipCompressorUtils.createZip(runtimeValue.WORKSPACE_FOLDER, tempFolder, "sourcefile-Auto-"+date+".zip");
+        ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Auto-"+date+".zip");
         messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
         isStartDownload = false;
     }
@@ -227,12 +238,12 @@ public class FileController {
     //https://www.baeldung.com/spring-scheduled-tasks
     //https://www.baeldung.com/spring-task-scheduler
     private void initTask(){
-        ConcurrentTaskExecutor concurrentTaskExecutor = new ConcurrentTaskExecutor();
+//        ConcurrentTaskExecutor concurrentTaskExecutor = new ConcurrentTaskExecutor();
 //        concurrentTaskExecutor.execute(r);
     }
     
     private void broadcast(Map<String, List<String>> fileList, FileType fileType) {
-        LOG.info("broadcast");
+        LOG.debug("broadcast");
         if(fileList.containsKey("New")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
