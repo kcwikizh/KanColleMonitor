@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class XModuleCallBack extends XModuleWebsocketClientCallBack {
-    private static final Logger LOG = LoggerFactory.getLogger(MessagePublisher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XModuleCallBack.class);
     
     @Override
     protected void moduleCallback(String paramTextMessage) {

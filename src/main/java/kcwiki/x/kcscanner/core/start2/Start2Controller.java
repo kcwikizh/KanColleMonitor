@@ -45,7 +45,7 @@ import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
@@ -115,15 +115,15 @@ public class Start2Controller {
             start2Data = Start2Utils.start2pojo(start2raw);
             AppDataCache.start2data = start2Data;
             Start2DataEntity start2DataEntity = start2DataService.getLatestData();
-            messagePublisher.publish("start2获取成功", WebsocketMessageType.KanColleScanner_System_Info);
+            messagePublisher.publish("start2获取成功", ModuleType.SystemInfo);
             if(start2DataEntity != null) {
                 String prevStart2 = start2DataEntity.getData();
                 prevStart2Data = Start2Utils.start2pojo(prevStart2);
                 prevStart2DataTimestamp = start2DataEntity.getTimestamp();
-                messagePublisher.publish("旧start2获取成功，时间戳为： "+prevStart2DataTimestamp, WebsocketMessageType.KanColleScanner_System_Info);
+                messagePublisher.publish("旧start2获取成功，时间戳为： "+prevStart2DataTimestamp, ModuleType.SystemInfo);
                 JsonNode patch = Start2Utils.getPatch(prevStart2, start2raw);
                 if(patch != null) {
-                    messagePublisher.publish("patch数据为： "+patch.size(), WebsocketMessageType.KanColleScanner_System_Info);
+                    messagePublisher.publish("patch数据为： "+patch.size(), ModuleType.SystemInfo);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
@@ -188,9 +188,9 @@ public class Start2Controller {
     }
     
     public void downloadFile(boolean isPreScan, boolean isSeasonal){
-        messagePublisher.publish("原旧Start2文件时间戳为： "+prevStart2DataTimestamp.toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("原旧Start2文件时间戳为： "+prevStart2DataTimestamp.toString(), ModuleType.SystemInfo);
         Start2DataEntity start2DataEntity = start2DataService.getLatestData();
-        messagePublisher.publish("现旧Start2文件时间戳为： "+start2DataEntity.getTimestamp().toString(), WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("现旧Start2文件时间戳为： "+start2DataEntity.getTimestamp().toString(), ModuleType.SystemInfo);
         downloadFile(Start2Utils.start2pojo(start2DataEntity.getData()), start2Data, isPreScan, isSeasonal, null);
     }
     
@@ -235,12 +235,12 @@ public class Start2Controller {
             });
             int successCount = fileResult.get(k).size();
             int sumCount = v.size();
-            messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, WebsocketMessageType.KanColleScanner_Download_Log);
+            messagePublisher.publish("Start2文件 "+k.getName()+" 下载完成："+successCount+"/"+sumCount, ModuleType.DownloadLog);
             broadcast(copyFiles(publishFolder, insertList, updateList), k);
         });
         LOG.info("start2文件下载完成");
         ZipCompressorUtils.createZip(downloadFolder, runtimeValue.WORKSPACE_FOLDER, "editorialfile.zip");
-        messagePublisher.publish("start2文件打包完成 请前往下载", WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("start2文件打包完成 请前往下载", ModuleType.SystemInfo);
         LOG.info("start2文件打包完成 请前往下载");
     }
     
@@ -329,13 +329,13 @@ public class Start2Controller {
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("New"));
-            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
         if(fileList.containsKey("Modified")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("Modified"));
-            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
     }
     

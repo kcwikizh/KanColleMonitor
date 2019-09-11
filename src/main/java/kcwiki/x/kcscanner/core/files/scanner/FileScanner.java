@@ -39,7 +39,7 @@ import kcwiki.x.kcscanner.httpclient.HttpClientConfig;
 import kcwiki.x.kcscanner.httpclient.HttpUtils;
 import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -297,7 +297,7 @@ public class FileScanner {
                     theCalendar.setTime(new Date(duration));
                     String MD = String.format("预计维护时间为：%d天 %d小时 %d分钟", theCalendar.get(Calendar.DAY_OF_MONTH)-1, theCalendar.get(Calendar.HOUR_OF_DAY), theCalendar.get(Calendar.MINUTE));
 
-                    messagePublisher.publish(sb.toString(), WebsocketMessageType.KanColleScanner_Auto_FileScan);
+                    messagePublisher.publish(sb.toString(), ModuleType.AutoFileScan);
                 }
             }
             

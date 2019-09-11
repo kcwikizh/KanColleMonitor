@@ -5,49 +5,42 @@
  */
 package kcwiki.x.kcscanner.message.websocket.entity;
 
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.management.xtraffic.base.BaseModuleProto;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
+import org.iharu.type.ResultType;
 
 /**
  *
  * @author iHaru
  */
-public class KcScannerProto <T> {
-    private WebsocketMessageType type;
-    private T payload;
+public class KcScannerProto extends BaseModuleProto {
     
-    public KcScannerProto (){}
+    private ModuleType moduleType;
     
-    public KcScannerProto (WebsocketMessageType type, T payload) {
-        this.type = type;
-        this.payload = payload;
+    public KcScannerProto(){}
+    
+    public KcScannerProto(ModuleType moduleType, String modulePayload){
+        super(modulePayload);
+        this.moduleType = moduleType;
+    }
+    
+    public KcScannerProto(ResultType moduleCode, ModuleType moduleType, String modulePayload){
+        super(moduleCode, modulePayload);
+        this.moduleType = moduleType;
     }
 
     /**
-     * @return the type
+     * @return the moduleType
      */
-    public WebsocketMessageType getType() {
-        return type;
+    public ModuleType getModuleType() {
+        return moduleType;
     }
 
     /**
-     * @param type the type to set
+     * @param moduleType the moduleType to set
      */
-    public void setType(WebsocketMessageType type) {
-        this.type = type;
-    }
-
-    /**
-     * @return the payload
-     */
-    public T getPayload() {
-        return payload;
-    }
-
-    /**
-     * @param payload the payload to set
-     */
-    public void setPayload(T payload) {
-        this.payload = payload;
+    public void setModuleType(ModuleType moduleType) {
+        this.moduleType = moduleType;
     }
     
 }

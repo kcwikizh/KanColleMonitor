@@ -48,7 +48,7 @@ import kcwiki.x.kcscanner.cache.inmem.AppDataCache;
 import kcwiki.x.kcscanner.exception.BaseException;
 import kcwiki.x.kcscanner.types.KcServerStatus;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import kcwiki.x.kcscanner.types.ServiceTypes;
 import static org.iharu.constant.ConstantValue.LINESEPARATOR;
@@ -137,13 +137,11 @@ public class AutoLogin extends BaseHttpClient {
         httpGet.setConfig(config);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             int rspcode = response.getCode();
-            messagePublisher.publish(
-                    String.format("测试： %d %s" , 
+            messagePublisher.publish(String.format("测试： %d %s" , 
                         rspcode, 
                         response.getReasonPhrase()
-                    ), 
-                    PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO
-            );
+                    ),
+                    ModuleType.AutoLogin);
             if (rspcode == 200) {
                 return true;
             }
@@ -153,11 +151,7 @@ public class AutoLogin extends BaseHttpClient {
                 httpclient.close();
             } catch (IOException ex1) {
             }
-            messagePublisher.publish(
-                    String.format("测试： 失败，发生IOException错误。"), 
-                    PublishTypes.Admin, 
-                    WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO
-            );
+            messagePublisher.publish(String.format("测试： 失败，发生IOException错误。"), ModuleType.AutoLogin);
         }
         return false;
     }
@@ -188,7 +182,7 @@ public class AutoLogin extends BaseHttpClient {
                 }
             }
             if(login_token != null){
-                //messagePublisher.publish("Login成功", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                //messagePublisher.publish("Login成功",  WebsocketMessageType.AutoLogin);
             }else{
                 return false;
             }
@@ -231,7 +225,7 @@ public class AutoLogin extends BaseHttpClient {
             }
             
             if(ajax_token != null){
-                //messagePublisher.publish("成功交换数据", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                //messagePublisher.publish("成功交换数据",  WebsocketMessageType.AutoLogin);
             }else{
                 return false;
             }
@@ -271,19 +265,19 @@ public class AutoLogin extends BaseHttpClient {
                         p=Pattern.compile("正しくありません");
                         m=p.matcher(retVal);
                         if(m.find()){
-                            messagePublisher.publish("账号：" + user_name + "\t密码错误", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                            messagePublisher.publish("账号：" + user_name + "\t密码错误",  ModuleType.AutoLogin);
                             throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "账号：" + user_name + "\t密码错误");
                         }
                         p=Pattern.compile("認証エラー");
                         m=p.matcher(retVal);
                         if(m.find()){
-                            messagePublisher.publish("DMM强制要求修改密码", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                            messagePublisher.publish("DMM强制要求修改密码",  ModuleType.AutoLogin);
                             throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "DMM强制要求修改密码");
                         }
                         p=Pattern.compile("地域からご利用");
                         m=p.matcher(retVal);
                         if(m.find()){
-                            messagePublisher.publish("非日本IP登陆", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                            messagePublisher.publish("非日本IP登陆",  ModuleType.AutoLogin);
                             throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "非日本IP登陆");
                         }
                         cookies = cookieStore.getCookies();
@@ -311,7 +305,7 @@ public class AutoLogin extends BaseHttpClient {
             cookieStr = cookieStr.substring(0, cookieStr.length()-1);
             httpGet.setHeader("Cookie", cookieStr); 
             if(!cookieStr.contains("login_secure_id")){
-                messagePublisher.publish("Cookie获取有误", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                messagePublisher.publish("Cookie获取有误",  ModuleType.AutoLogin);
                 throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "Cookie获取有误");
             }
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
@@ -328,7 +322,7 @@ public class AutoLogin extends BaseHttpClient {
                 if(m.find()){
                     netgame_osapi_url=m.group(1);
                 }else{
-                    messagePublisher.publish("输入的用户密码有误", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("输入的用户密码有误",  ModuleType.AutoLogin);
                     throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "输入的用户密码有误");
                 }
                 p=Pattern.compile("&mid=(\\d+)");
@@ -350,7 +344,7 @@ public class AutoLogin extends BaseHttpClient {
             }
             
             if(netgame_osapi_url != null){
-                //messagePublisher.publish("跳转成功", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                //messagePublisher.publish("跳转成功",  WebsocketMessageType.AutoLogin);
             }else{
                 return false;
             }
@@ -440,7 +434,7 @@ public class AutoLogin extends BaseHttpClient {
                    jobj = jobj.getAsJsonObject(i);
                 }
                 if(!retVal.contains("成功") && !retVal.contains("\\u6210\\u529f")){
-                    messagePublisher.publish("服务器仍在维护中", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("服务器仍在维护中",  ModuleType.AutoLogin);
                     sleep(90*1000);
                     return false;
                 }
@@ -455,7 +449,7 @@ public class AutoLogin extends BaseHttpClient {
             }
             
             if(MRR_world != null){
-                //messagePublisher.publish("游戏Token获取成功！", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO); 
+                //messagePublisher.publish("游戏Token获取成功！",  WebsocketMessageType.AutoLogin); 
             }else{
                 return false;
             }
@@ -566,38 +560,38 @@ public class AutoLogin extends BaseHttpClient {
         try {
             while(true){
                 if(Login()){
-                    messagePublisher.publish("获取dmm_token成功", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("获取dmm_token成功",  ModuleType.AutoLogin);
                     break;
                 }
             }
             
             while(true){
                 if(Ajax()){
-                    messagePublisher.publish("成功交换数据", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("成功交换数据",  ModuleType.AutoLogin);
                     break;
                 }
             }
             while(true){
                 if(Auth()){
-                    messagePublisher.publish("接口认证通过", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("接口认证通过",  ModuleType.AutoLogin);
                     break;
                 }
             }
             while(true){
                 if(NetGame()){
-                    messagePublisher.publish("跳转成功", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO);
+                    messagePublisher.publish("跳转成功",  ModuleType.AutoLogin);
                     break;
                 }
             }
 //            while(true){
 //                if(DataRequest()){
-//                    messagePublisher.publish("服务器ID和IP地址获取成功！", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO); 
+//                    messagePublisher.publish("服务器ID和IP地址获取成功！",  WebsocketMessageType.AutoLogin); 
 //                    break;
 //                }
 //            }
             while(true){
                 if(MakeRequestRefresh()){
-                    messagePublisher.publish("游戏Token获取成功！", PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO); 
+                    messagePublisher.publish("游戏Token获取成功！",  ModuleType.AutoLogin); 
                     break;
                 }
             }
@@ -614,9 +608,7 @@ public class AutoLogin extends BaseHttpClient {
             this.httpclient.close();
         } catch (IOException | BaseException ex) {
             LOG.error("AutoLogin - netStart - {}{}", LINESEPARATOR, ExceptionUtils.getStackTrace(ex));
-            messagePublisher.publish(
-                    String.format("GetStart2发生IOException错误！错误信息概述为：{}", ex.getMessage()), 
-                    PublishTypes.Admin, WebsocketMessageType.KanColleScanner_AutoLogin, MessageLevel.INFO); 
+            messagePublisher.publish(String.format("GetStart2发生IOException错误！错误信息概述为：{}", ex.getMessage()), ModuleType.AutoLogin); 
             if(ex instanceof BaseException) {
                 throw ex;
             }

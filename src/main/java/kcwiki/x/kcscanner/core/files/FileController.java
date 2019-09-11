@@ -26,7 +26,7 @@ import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.FileType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.io.FileUtils;
@@ -126,7 +126,7 @@ public class FileController {
             }
             long date = (new Date()).getTime();
             ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Manual-"+date+".zip");
-            messagePublisher.publish("核心文件下载完成（Manual） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
+            messagePublisher.publish("核心文件下载完成（Manual） 请前往下载。文件时间戳为："+date, ModuleType.SystemInfo);
         } else {
             emailService.sendSimpleEmail(MessageLevel.ERROR, "扫描文件数据时失败。");
         }
@@ -176,7 +176,7 @@ public class FileController {
         }
         long date = (new Date()).getTime();
         ZipCompressorUtils.createZip(tempFolder, runtimeValue.WORKSPACE_FOLDER, "sourcefile-Auto-"+date+".zip");
-        messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("核心文件下载完成（Auto） 请前往下载。文件时间戳为："+date, ModuleType.SystemInfo);
         isStartDownload = false;
     }
     
@@ -248,13 +248,13 @@ public class FileController {
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("New"));
-            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
         if(fileList.containsKey("Modified")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("Modified"));
-            messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
     }
 

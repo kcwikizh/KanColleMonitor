@@ -9,10 +9,11 @@ import java.util.Date;
 import kcwiki.x.kcscanner.message.mail.EmailService;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.types.MessageLevel;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import org.iharu.proto.web.WebResponseProto;
 import org.iharu.type.BaseHttpStatus;
+import org.iharu.type.ResultType;
 import org.iharu.web.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,15 +41,8 @@ public class Testcase extends BaseController {
     
     @RequestMapping("/wstest")
     public String wsSendMsg(){
-        WebResponseProto baseMessageEntity = new WebResponseProto();
-        baseMessageEntity.setData(new Date());
-        baseMessageEntity.setMsg("Full Msg Test");
-        messagePublisher.publish(baseMessageEntity, PublishTypes.All, WebsocketMessageType.KanColleScanner_Manual_FileScan, MessageLevel.ERROR);
-        baseMessageEntity = new WebResponseProto();
-        baseMessageEntity.setData(new Date());
-        baseMessageEntity.setMsg("Full Msg Test");
-        baseMessageEntity.setStatus(BaseHttpStatus.Bad_Request);
-        messagePublisher.publish(baseMessageEntity);
+        messagePublisher.publish("ws test", ModuleType.ManualFileScan, ResultType.UNKNOWN);
+        messagePublisher.publish("ws test", ModuleType.ManualFileScan, ResultType.FAILURE);
         return "SUCCESS";
     }
     

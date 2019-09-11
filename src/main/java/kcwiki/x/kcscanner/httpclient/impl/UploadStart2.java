@@ -18,9 +18,10 @@ import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.iharu.type.ResultType;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -65,15 +66,15 @@ public class UploadStart2 extends BaseHttpClient {
                     try (CloseableHttpResponse response = _httpclient.execute(httpPost)) {
                         InputStream in=response.getEntity().getContent();
                         String retVal = readStream(in);
-                        WebsocketMessageType type = WebsocketMessageType.KanColleScanner_UploadStart2;
+                        ModuleType type = ModuleType.UploadStart2;
                         if(retVal.contains("data invalid")){
-                            messagePublisher.publish("上传的start2数据不合法！", PublishTypes.Admin, type, MessageLevel.ERROR);
+                            messagePublisher.publish("上传的start2数据不合法！",type, ResultType.ERROR);
                         }
                         if(retVal.contains("duplicate start2 data")){
-                            messagePublisher.publish("上传的start2数据已经存在。", PublishTypes.Admin, type);
+                            messagePublisher.publish("上传的start2数据已经存在。",type);
                         }
                         if(retVal.contains("success")){
-                            messagePublisher.publish("start2上传成功！", PublishTypes.Admin, type);
+                            messagePublisher.publish("start2上传成功！",type);
                         }
                     } catch (IOException ex) {
                         LOG.error(ExceptionUtils.getStackTrace(ex));

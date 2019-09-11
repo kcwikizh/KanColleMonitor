@@ -23,7 +23,7 @@ import kcwiki.x.kcscanner.httpclient.impl.UploadStart2;
 import kcwiki.x.kcscanner.initializer.AppConfig;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.entity.DownLoadResult;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -70,7 +70,7 @@ public class Api extends BaseController {
         return "Hello " + name + "<br>";
     }
     
-    @RequestMapping("/pushimgs")
+    @RequestMapping("/pushdownloadresult")
     public String pushimgs(@RequestParam(value="name", defaultValue="World") String name) {
         List<String> list = new ArrayList();
         list.add("start2file/new/kcs2/resources/map/042/01_image.png");
@@ -80,13 +80,13 @@ public class Api extends BaseController {
         DownLoadResult downLoadResult = new DownLoadResult();
         downLoadResult.setType(FileType.Mapinfo);
         downLoadResult.setFilelist(list);
-        messagePublisher.publish(downLoadResult, WebsocketMessageType.KanColleScanner_Download_Result);
+        messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         return "SUCCESS";
     }
     
     @RequestMapping("/pushinfo")
     public String pushinfo(@RequestParam(value="name", defaultValue="World") String name) {
-        messagePublisher.publish("系统消息测试", WebsocketMessageType.KanColleScanner_System_Info);
+        messagePublisher.publish("系统消息测试", ModuleType.SystemInfo);
         return "SUCCESS";
     }
     
@@ -95,7 +95,7 @@ public class Api extends BaseController {
         if(executor != null)
             executor.shutdownNow();
         executor = Executors.newScheduledThreadPool(3); 
-        messagePublisher.publish("start monitoring...");
+        messagePublisher.publish("start monitoring...", ModuleType.SystemInfo);
         executor.scheduleAtFixedRate(  
                new Runnable() {
                     @Override
@@ -118,7 +118,7 @@ public class Api extends BaseController {
         if(executor == null)
             return "No monitor running...";
         executor.shutdownNow();
-        messagePublisher.publish("stop monitor...");
+        messagePublisher.publish("stop monitor...", ModuleType.SystemInfo);
         return "SUCCESS";
     }
     

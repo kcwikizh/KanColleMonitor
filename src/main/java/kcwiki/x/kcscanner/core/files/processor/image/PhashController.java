@@ -15,7 +15,7 @@ import java.util.concurrent.Future;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.types.MessageLevel;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import static org.iharu.constant.ConstantValue.LINESEPARATOR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,8 +93,7 @@ public class PhashController implements Runnable{
                         int lastest = new File(newFileFolder).listFiles().length;
                         if(lastest != 0){
                             //pHash互查对比完成
-                            messagePublisher.publish(
-                                    String.format(
+                            messagePublisher.publish(String.format(
                                             "%s\t img 剩余文件：%d", 
                                             filename.substring(
                                                     filename.lastIndexOf(File.separator)+1, 
@@ -102,9 +101,7 @@ public class PhashController implements Runnable{
                                             ), 
                                             lastest
                                     ), 
-                                    PublishTypes.Admin, 
-                                    WebsocketMessageType.KanColleScanner_UploadStart2, MessageLevel.INFO
-                            );
+                                    ModuleType.UploadStart2);
 //                            DBCenter.imgdiff.add(newFileFolder);
                         }
                         sleep(1*1000);

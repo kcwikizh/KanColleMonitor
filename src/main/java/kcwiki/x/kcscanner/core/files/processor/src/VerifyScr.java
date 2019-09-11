@@ -13,7 +13,7 @@ import kcwiki.x.kcscanner.cache.inmem.RuntimeValue;
 import kcwiki.x.kcscanner.message.websocket.MessagePublisher;
 import kcwiki.x.kcscanner.message.websocket.types.PublishTypes;
 import kcwiki.x.kcscanner.types.MessageLevel;
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import org.iharu.util.CommontUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +62,14 @@ public class VerifyScr {
                     if(lastest != 0){
                         //MD5互查对比完成
                         
-                        messagePublisher.publish(
-                                String.format("%s\t scr 剩余文件：%s", filename.substring(filename.lastIndexOf(File.separator)+1, filename.length()), lastest),
-                                PublishTypes.Admin, 
-                                WebsocketMessageType.KanColleScanner_UploadStart2, MessageLevel.INFO
-                        );
+                        messagePublisher.publish(String.format(
+                                        "%s\t scr 剩余文件：%s", 
+                                        filename.substring(
+                                                filename.lastIndexOf(File.separator)+1, 
+                                                filename.length()), 
+                                        lastest
+                                ),
+                                ModuleType.UploadStart2);
                     }
                     scrDelList.clear();
                     //String data = JSON.toJSONString(swfSrcPatch,SerializerFeature.BrowserCompatible);

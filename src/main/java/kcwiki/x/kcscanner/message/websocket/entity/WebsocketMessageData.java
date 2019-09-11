@@ -5,7 +5,7 @@
  */
 package kcwiki.x.kcscanner.message.websocket.entity;
 
-import kcwiki.x.kcscanner.message.websocket.types.WebsocketMessageType;
+import kcwiki.x.kcscanner.message.websocket.types.ModuleType;
 import kcwiki.x.kcscanner.types.MessageLevel;
 
 /**
@@ -14,21 +14,21 @@ import kcwiki.x.kcscanner.types.MessageLevel;
  */
 public class WebsocketMessageData<T> {
 
-    private WebsocketMessageType type;
+    private ModuleType type;
     private MessageLevel level;
     private T payload;
 
     /**
      * @return the type
      */
-    public WebsocketMessageType getType() {
+    public ModuleType getType() {
         return type;
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(WebsocketMessageType type) {
+    public void setType(ModuleType type) {
         this.type = type;
     }
 
