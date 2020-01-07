@@ -137,21 +137,21 @@ public class AutoLogin extends BaseHttpClient {
         httpGet.setConfig(config);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             int rspcode = response.getCode();
-            messagePublisher.publish(String.format("测试： %d %s" , 
-                        rspcode, 
-                        response.getReasonPhrase()
-                    ),
-                    ModuleType.AutoLogin);
+//            messagePublisher.publish(String.format("测试： %d %s" , 
+//                        rspcode, 
+//                        response.getReasonPhrase()
+//                    ),
+//                    ModuleType.AutoLogin);
             if (rspcode == 200) {
                 return true;
             }
         } catch (IOException ex) {  
-            LOG.error("测试： 失败，发生IOException错误。");
+            LOG.error("服务器连通性测试失败，发生IOException错误。");
             try {
                 httpclient.close();
             } catch (IOException ex1) {
             }
-            messagePublisher.publish(String.format("测试： 失败，发生IOException错误。"), ModuleType.AutoLogin);
+            messagePublisher.publish(String.format("服务器连通性测试失败，发生IOException错误。"), ModuleType.AutoLogin);
         }
         return false;
     }
@@ -264,9 +264,14 @@ public class AutoLogin extends BaseHttpClient {
                 String retVal = readStream(in);
                         p=Pattern.compile("正しくありません");
                         m=p.matcher(retVal);
-                        if(m.find()){
-                            messagePublisher.publish("账号：" + user_name + "\t密码错误",  ModuleType.AutoLogin);
-                            throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, "账号：" + user_name + "\t密码错误");
+                        if(m.find()){;
+//                            messagePublisher.publish("账号：" 
+//                                    + String.format("%" + (user_name.length()-3) + "s", user_name.substring(0, 3)).replace(' ', '*') 
+//                                    + "\t密码错误",  ModuleType.AutoLogin);
+                            throw new BaseException(ServiceTypes.KanColleServer, KcServerStatus.ERROR, 
+                                    "账号：" 
+                                            + String.format("%" + (user_name.length()-3) + "s", user_name.substring(0, 3)).replace(' ', '*') 
+                                            + "\t密码错误");
                         }
                         p=Pattern.compile("認証エラー");
                         m=p.matcher(retVal);
@@ -608,7 +613,7 @@ public class AutoLogin extends BaseHttpClient {
             this.httpclient.close();
         } catch (IOException | BaseException ex) {
             LOG.error("AutoLogin - netStart - {}{}", LINESEPARATOR, ExceptionUtils.getStackTrace(ex));
-            messagePublisher.publish(String.format("GetStart2发生IOException错误！错误信息概述为：{}", ex.getMessage()), ModuleType.AutoLogin); 
+            messagePublisher.publish(String.format("GetStart2发生错误！错误信息概述为：%s", ex.getMessage()), ModuleType.AutoLogin); 
             if(ex instanceof BaseException) {
                 throw ex;
             }

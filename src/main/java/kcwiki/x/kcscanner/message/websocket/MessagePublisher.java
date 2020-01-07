@@ -37,7 +37,12 @@ public class MessagePublisher<T> {
     }
     
     public void publish(KcScannerProto proto, ResultType resultType){
-        xMessagePublisher.publishNonSystemMsg(resultType, proto);
+        try{
+            xMessagePublisher.publishNonSystemMsg(resultType, proto);
+        }catch(Exception ex) {
+            LOG.error("publish failed", ex);
+        }
+        
     }
     
     public <T> void publish(T payload, ModuleType moduleType) {

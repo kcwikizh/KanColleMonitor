@@ -123,7 +123,7 @@ public class Start2Controller {
                 messagePublisher.publish("旧start2获取成功，时间戳为： "+prevStart2DataTimestamp, ModuleType.SystemInfo);
                 JsonNode patch = Start2Utils.getPatch(prevStart2, start2raw);
                 if(patch != null) {
-                    messagePublisher.publish("patch数据为： "+patch.size(), ModuleType.SystemInfo);
+                    messagePublisher.publish("patch条数为： "+patch.size(), ModuleType.SystemInfo);
                     insertStart2Data(start2raw, date);
                     return true;
                 }
@@ -329,13 +329,13 @@ public class Start2Controller {
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("New"));
-            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
+//            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
         if(fileList.containsKey("Modified")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("Modified"));
-            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
+//            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
     }
     

@@ -248,13 +248,13 @@ public class FileController {
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("New"));
-            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
+//            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
         if(fileList.containsKey("Modified")){
             DownLoadResult downLoadResult = new DownLoadResult();
             downLoadResult.setType(fileType);
             downLoadResult.setFilelist(fileList.get("Modified"));
-            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
+//            messagePublisher.publish(downLoadResult, ModuleType.DownloadResult);
         }
     }
 
